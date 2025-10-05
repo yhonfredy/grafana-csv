@@ -1,0 +1,145 @@
+[
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T00:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T01:30:01Z",
+    "status_code": 401,
+    "status": "UNAUTHORIZED",
+    "message": "Account is locked"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T02:30:01Z",
+    "status_code": 503,
+    "status": "SERVICE_UNAVAILABLE",
+    "message": "No listener available"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T03:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T04:30:01Z",
+    "status_code": 504,
+    "status": "GATEWAY_TIMEOUT",
+    "message": "Connection timeout"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T05:30:01Z",
+    "status_code": 400,
+    "status": "BAD_REQUEST",
+    "message": "Invalid DSN configuration"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T06:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T07:30:01Z",
+    "status_code": 507,
+    "status": "INSUFFICIENT_STORAGE",
+    "message": "Archiver error: insufficient storage"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T08:30:01Z",
+    "status_code": 401,
+    "status": "UNAUTHORIZED",
+    "message": "Invalid username or password"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T09:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T10:30:01Z",
+    "status_code": 503,
+    "status": "SERVICE_UNAVAILABLE",
+    "message": "Service not available"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T11:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T12:30:01Z",
+    "status_code": 504,
+    "status": "GATEWAY_TIMEOUT",
+    "message": "Connection timeout"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T13:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T14:30:01Z",
+    "status_code": 400,
+    "status": "BAD_REQUEST",
+    "message": "Invalid DSN configuration"
+  }
+,
+  {
+    "database": "Oracle",
+    "dsn": "10.7.2.14:1521/tron",
+    "timestamp": "2025-10-05T15:30:01Z",
+    "status_code": 200,
+    "status": "OK",
+    "message": "Database responding normally"
+  }
+]
