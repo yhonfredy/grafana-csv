@@ -1,20 +1,16 @@
-### URLs Simon Quotation (IPs actualizadas)
 http://10.79.0.97:6010/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
 http://10.79.0.98:6010/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
 http://10.79.0.106:6010/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
 http://10.79.0.84:6010/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
-Nodo 5: http://10.79.0.97:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
-Nodo 6: http://10.79.0.98:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
-Nodo 7: http://10.79.0.106:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
-Nodo 8: http://10.79.0.84:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
-
-### URLs Simon Web (IPs actualizadas)
-
-Nodo 1: http://10.79.0.97:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 2: http://10.79.0.98:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 3: http://10.79.0.97:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 4: http://10.79.0.98:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 5: http://10.79.0.106:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 6: http://10.79.0.84:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 7: http://10.79.0.106:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
-Nodo 8: http://10.79.0.84:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.97:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
+http://10.79.0.98:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
+http://10.79.0.106:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
+http://10.79.0.84:6013/SimonQuotation/securityServlet?co=CO&Username=1093783815&employeeType=CC&sbcodActBenef=2
+http://10.79.0.97:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.98:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.97:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.98:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.106:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.84:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.106:6004/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
+http://10.79.0.84:6005/SimonWeb/securityServlet?co=CO&Username=80420092&employeeType=CC&sbcodActBenef=2
