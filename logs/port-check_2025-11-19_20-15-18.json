@@ -1,0 +1,107 @@
+{
+  "check_timestamp": "2025-11-19 20:15:18",
+  "total_servers": 12,
+  "summary": {
+    "up": 2,
+    "down": 10,
+    "up_percentage": 16.67
+  },
+  "servers": [
+    {
+      "name": "AdminServer_Prod_cen_frm_prod",
+      "ip": "10.1.3.144",
+      "port": 9000,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Puerto cerrado o firewall"
+    },
+    {
+      "name": "Agenda1",
+      "ip": "10.6.4.137",
+      "port": 5897,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Agenda1_2",
+      "ip": "10.6.4.137",
+      "port": 5896,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Agenda1_2_141",
+      "ip": "10.6.4.138",
+      "port": 5871,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Agenda1_141",
+      "ip": "10.6.4.138",
+      "port": 5870,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Asistencia",
+      "ip": "10.1.5.189",
+      "port": 5898,
+      "status": "up",
+      "response_time_ms": 99.51,
+      "message": "OK - 99.51ms"
+    },
+    {
+      "name": "Asistencia_2",
+      "ip": "10.1.5.188",
+      "port": 5897,
+      "status": "up",
+      "response_time_ms": 99.2,
+      "message": "OK - 99.2ms"
+    },
+    {
+      "name": "Atgc1_2_141",
+      "ip": "10.6.4.138",
+      "port": 5894,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Atgc1_141",
+      "ip": "10.6.4.138",
+      "port": 5895,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Avaluos",
+      "ip": "10.1.5.118",
+      "port": 5897,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Avaluos1_v14",
+      "ip": "10.7.6.8",
+      "port": 5860,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    },
+    {
+      "name": "Avaluos2_v14",
+      "ip": "10.7.6.23",
+      "port": 5859,
+      "status": "down",
+      "response_time_ms": null,
+      "message": "Error 11"
+    }
+  ]
+}
