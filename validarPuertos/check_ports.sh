@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# --- CONFIGURACIÓN ---
-GITHUB_TOKEN="aca" 
-REPO="yhonfredy/grafana-csv"
-BRANCH="main"
+# --- IMPORTAR VARIABLES ---
+# Obtiene la ruta donde está el script y carga el archivo de claves.
+SCRIPT_DIR=$(dirname "$0")
+source "$SCRIPT_DIR/claves.env"
+
+# --- CONFIGURACIÓN RESTANTE ---
+# GITHUB_TOKEN="aca"  # <<<< ESTA LÍNEA DEBE SER ELIMINADA O COMENTADA
+# REPO="yhonfredy/grafana-csv" # <<<< ESTA LÍNEA DEBE SER ELIMINADA O COMENTADA
+# BRANCH="main" # <<<< ESTA LÍNEA DEBE SER ELIMINADA O COMENTADA
+
 SERVIDORES_FILE="urls/RevisionesCMDB_PROD.json"
 LOGS_FOLDER="logs"
 INPUT_FILE="servidores_tmp.json"
