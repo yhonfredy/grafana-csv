@@ -2,30 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import telnetlib   # ← esto es lo nuevo
+import telnetlib
 import sys
 import json
 from datetime import datetime
 
 # ==================== CONFIGURACIÓN ====================
 CSV_FILE = "ListadoWebLogic.csv"
-TELNET_TIMEOUT = 8      # segundos (un poco más que antes)
+TELNET_TIMEOUT = 8
 JSON_LOG = True
 # ======================================================
 
 def check_telnet(ip, port):
-    """Devuelve True si hay banner o respuesta Telnet (WebLogic vivo)"""
     try:
         tn = telnetlib.Telnet(ip, port, timeout=TELNET_TIMEOUT)
-        # WebLogic suele responder algo como "BEA-" o "Oracle WebLogic" en los primeros bytes
-        respuesta = tn.read_some()  # lee hasta 1024 bytes o timeout
+        tn.read_some()
         tn.close()
         return True
-    except Exception as e:
+    except:
         return False
 
-# ==================== LECTURA CSV Y CHECKS ====================
-print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Iniciando verificación WebLogic vía Telnet")
+# ==================== LECTURA Y CHECKS ====================
+print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Iniciando check WebLogic vía Telnet")
 
 results = []
 up_count = 0
@@ -50,7 +48,7 @@ try:
             if len(row) < max(col_nombre, col_ip, col_puerto) + 1:
                 continue
 
-            nombre = row[col_nombre].strip() or f"Servidor_fila_{num_linea}"
+            nombre = row[col_nombre].strip() or f"Servidor_{num_linea}"
             ip     = row[col_ip].strip()
             puerto = row[col_puerto].strip()
 
@@ -74,6 +72,10 @@ try:
                 "puerto_abierto": 1 if esta_up else 0
             })
 
+except FileNotFoundError:
+    print(f"ERROR: Archivo no encontrado → {CSV_FILE}")
+    sys.exit(1)
+
 # ==================== GUARDAR JSON LOCAL ====================
 if JSON_LOG and results:
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -81,8 +83,11 @@ if JSON_LOG and results:
     final_json = {
         "check_timestamp": datetime.now().isoformat() + "Z",
         "total_servers": total_count,
-        "summary": {"up": up_count, "down": total_count - up_count,
-                    "up_percentage": round(up_count / total_count * 100, 2) if total_count else 0},
+        "summary": {
+            "up": up_count,
+            "down": total_count - up_count,
+            "up_percentage": round(up_count / total_count * 100, 2) if total_count else 0
+        },
         "servers": results
     }
     with open(filename, 'w', encoding='utf-8') as f:
@@ -101,7 +106,7 @@ try:
     db = firestore.client()
     collection = db.collection("weblogic_checks")
 
-    print("Subiendo datos a Firestore vía Telnet...")
+    print("Subiendo datos a Firestore (check por Telnet)...")
     batch = db.batch()
     count = 0
 
@@ -126,7 +131,7 @@ try:
     if count % 500 != 0:
         batch.commit()
 
-    print(f"¡Subidos {len(results)} registros (check por Telnet) a Firestore!")
+    print(f"¡Subidos {len(results)} registros a Firestore (check por Telnet)!")
 
 except ImportError:
     print("firebase-admin no instalado → sudo pip3 install firebase-admin")
