@@ -12,7 +12,7 @@ RESULTS_JSON="[]"
 echo "=== Check WebLogic vía Telnet – $(date '+%Y-%m-%d %H:%M:%S') ==="
 
 # Lee el CSV saltando la cabecera
-while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre" ]; do
+while IFS=';' read -r nombre ip puerto rest || [ -n "$nombre" ]; do
     [[ "$nombre" =~ ^#.*$ ]] && continue
     [[ -z "$ip" || -z "$puerto" ]] && continue
     [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
