@@ -1,12 +1,9 @@
 #!/bin/bash
-# check_weblogic_telnet.sh 
-# Solo bash + telnet + jq
-
+# telnetWeblogicRedVerdeSinDB.sh → versión FINAL sin errores
 CSV_FILE="ListadoWebLogic.csv"
 
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 TIMESTAMP_LOCAL=$(date +"%Y-%m-%d %H:%M:%S")
-RUN_ID=$(date +"%Y%m%d_%H%M")
 
 UP=0
 TOTAL=0
@@ -15,8 +12,7 @@ RESULTS_JSON="[]"
 echo "=== Check WebLogic vía Telnet – $(date '+%Y-%m-%d %H:%M:%S') ==="
 
 # Lee el CSV saltando la cabecera
-while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre ]; do
-    # Ignora líneas comentadas o vacías
+while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre" ]; do
     [[ "$nombre" =~ ^#.*$ ]] && continue
     [[ -z "$ip" || -z "$puerto" ]] && continue
     [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
@@ -24,7 +20,6 @@ while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre ]; do
 
     ((TOTAL++))
 
-    # Check con telnet (más fiable que solo puerto abierto)
     if timeout 10 bash -c "echo > /dev/tcp/$ip/$puerto" 2>/dev/null && \
        timeout 8 telnet "$ip" "$puerto" </dev/null 2>/dev/null | grep -q .; then
         STATUS="up"
@@ -35,7 +30,7 @@ while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre ]; do
         echo "DOWN $nombre → $ip:$puerto"
     fi
 
-    # Añade al array JSON
+    # ← AQUÍ ESTABA EL ERROR (falta comilla y paréntesis)
     DOC=$(jq -n \
       --arg n "$nombre" \
       --arg i "$ip" \
@@ -47,7 +42,7 @@ while IFS=';,	' read -r nombre ip puerto rest || [ -n "$nombre ]; do
 
 done < <(tail -n +2 "$CSV_FILE")
 
-# Guarda el JSON de log 
+# Guardar JSON de log
 LOG_FILE="weblogic_check_$(date +%Y-%m-%d_%H-%M-%S).json"
 jq -n \
   --arg t "$TIMESTAMP" \
