@@ -1,24 +1,27 @@
 #!/bin/bash
 
 CSV_FILE="ListadoWebLogic.csv"
-TIMEOUT=5 # Timeout más corto para el comando nc
+TIMEOUT=5 # Timeout en segundos
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Check WebLogic con Netcat (espera hasta ${TIMEOUT}s)"
 
 # Leer el archivo CSV, ignorando la primera línea (cabecera)
-tail -n +2 "$CSV_FILE" | while IFS=';' read -r nombre ip puerto_str resto; do
-    # Eliminar espacios en blanco
-    nombre=$(echo "$nombre" | xargs)
-    ip=$(echo "$ip" | xargs)
-    puerto_str=$(echo "$puerto_str" | xargs)
+# IFS=';' define el delimitador
+# -r previene el tratamiento especial de backslashes
+tail -n +2 "$CSV_FILE" | while IFS=';' read -r nombre_raw ip_raw puerto_str_raw resto; do
+    
+    # 1. Limpiar los espacios en blanco iniciales/finales de las variables
+    nombre=$(echo "$nombre_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    ip=$(echo "$ip_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    puerto_str=$(echo "$puerto_str_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
-    # Validar que el puerto sea un número
-    if ! [[ "$puerto_str" =~ ^[0-9]+$ ]]; then
+    # 2. Validar que la IP y el Puerto no estén vacíos y que el puerto sea un número
+    if [ -z "$ip" ] || [ -z "$puerto_str" ] || ! [[ "$puerto_str" =~ ^[0-9]+$ ]]; then
         continue
     fi
 
-    # Comprobación con Netcat (nc -z: solo escanear, -w: timeout)
-    # 2>/dev/null suprime la salida de error de nc
+    # 3. Comprobación con Netcat (nc -z: solo escanear, -w: timeout)
+    # timeout "${TIMEOUT}" se asegura de que la comprobación no dure más de 5 segundos.
     if timeout "${TIMEOUT}" nc -z -w "${TIMEOUT}" "$ip" "$puerto_str" 2>/dev/null; then
         echo "UP   $(printf "%-50s" "$nombre") → $ip:$puerto_str"
     else
