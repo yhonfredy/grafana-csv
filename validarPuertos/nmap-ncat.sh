@@ -10,7 +10,7 @@ echo "[$(date +'%Y-%m-%d %H:%M:%S')] Check WebLogic con Netcat (espera hasta ${T
 # -r previene el tratamiento especial de backslashes
 tail -n +2 "$CSV_FILE" | while IFS=';' read -r nombre_raw ip_raw puerto_str_raw resto; do
     
-    # 1. Limpiar los espacios en blanco iniciales/finales de las variables
+    # 1. Limpiar los espacios en blanco iniciales/finales de las variables usando sed
     nombre=$(echo "$nombre_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     ip=$(echo "$ip_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     puerto_str=$(echo "$puerto_str_raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
@@ -21,7 +21,6 @@ tail -n +2 "$CSV_FILE" | while IFS=';' read -r nombre_raw ip_raw puerto_str_raw 
     fi
 
     # 3. Comprobación con Netcat (nc -z: solo escanear, -w: timeout)
-    # timeout "${TIMEOUT}" se asegura de que la comprobación no dure más de 5 segundos.
     if timeout "${TIMEOUT}" nc -z -w "${TIMEOUT}" "$ip" "$puerto_str" 2>/dev/null; then
         echo "UP   $(printf "%-50s" "$nombre") → $ip:$puerto_str"
     else
