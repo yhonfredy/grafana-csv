@@ -14,32 +14,20 @@ echo
 > "$LOG_FILE"
 
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
-grep -E "Entry" | \
-awk -F', ' '
-{
-  alias=$1
-  raw_date=$2
-  tipo=$NF
+awk -F',' '
+/Entry$/ {
+    alias=$1
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", alias)
 
-  # Normalizar fecha:
-  # Español: "31 jul. 2025"
-  # Inglés : "Jul 31, 2025"
+    fecha=$2
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", fecha)
 
-  gsub(/\./,"",raw_date)
-  gsub(/,/,"",raw_date)
+    tipo=$NF
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", tipo)
 
-  split(raw_date, d, " ")
-
-  if (d[1] ~ /^[0-9]+$/) {
-    # Español → DD mes YYYY
-    dia=d[1]; mes=d[2]; year=d[3]
-  } else {
-    # Inglés → mes DD YYYY
-    dia=d[2]; mes=d[1]; year=d[3]
-  }
-
-  print alias " | " dia " " mes " " year " | " tipo
-}' | tee "$LOG_FILE"
+    print alias " | " fecha " | " tipo
+}
+' | tee "$LOG_FILE"
 
 TOTAL=$(wc -l < "$LOG_FILE" | tr -d ' ')
 
