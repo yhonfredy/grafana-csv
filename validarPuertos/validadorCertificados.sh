@@ -14,45 +14,31 @@ echo
 
 > "$LOG_FILE"
 
-# 1. Generar lista base: alias, mes dia, año, tipo → separados por " | "
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# 2. Normalizar: unir mes + día + año → formato español "DD mes YYYY"
-#    y dejar solo: alias | fecha_español | tipo
 awk -F' \\| ' '
 BEGIN {
-    # Mapa de meses inglés → español (minúsculas)
-    mes["jan"] = "ene"; mes["feb"] = "feb"; mes["mar"] = "mar";
-    mes["apr"] = "abr"; mes["may"] = "may"; mes["jun"] = "jun";
-    mes["jul"] = "jul"; mes["aug"] = "ago"; mes["sep"] = "sep";
-    mes["oct"] = "oct"; mes["nov"] = "nov"; mes["dec"] = "dic";
+    mes["jan"]="ene"; mes["feb"]="feb"; mes["mar"]="mar";
+    mes["apr"]="abr"; mes["may"]="may"; mes["jun"]="jun";
+    mes["jul"]="jul"; mes["aug"]="ago"; mes["sep"]="sep";
+    mes["oct"]="oct"; mes["nov"]="nov"; mes["dec"]="dic";
 }
 {
-    # Limpiar espacios al inicio/final
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0)
-
     alias = $1
-    mes_ing = tolower($2)
-    dia = $3
-    year = $4
-    tipo = $5
+    split($2, md, " ")
+    mes_ing = tolower(md[1])
+    dia = md[2]
+    year = $3
+    tipo = $4
 
-    # Convertir mes a español
     mes_esp = mes[mes_ing]
-    if (mes_esp == "") mes_esp = mes_ing  # fallback si ya viene en español
+    if (mes_esp == "") mes_esp = mes_ing
 
-    # Formatear día sin cero inicial (si aplica)
-    gsub(/^0+/, "", dia)
-
-    # Construir fecha final: "13 dic 2023"
-    fecha_final = dia " " mes_esp " " year
-
-    # Imprimir: alias | fecha | tipo
-    print alias " | " fecha_final " | " tipo
+    print alias " | " dia " " mes_esp " " year " | " tipo
 }
 ' "$LOG_FILE" > "$FINAL_FILE"
 
