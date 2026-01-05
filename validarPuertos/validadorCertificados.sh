@@ -14,27 +14,28 @@ echo
 
 > "$LOG_FILE"
 
-# ---------------- GENERACIÓN BASE ----------------
+# ------------------ GENERACIÓN BASE ------------------
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# ---------------- CORRECCIÓN DE FECHAS ----------------
-awk -F'\\|' '
+# ------------------ NORMALIZACIÓN POR CONTEO DE | ------------------
+awk '
 {
-    if (NF == 5) {
-        # Une Mes Día Año → "Jul 9 2019"
-        printf "%s | %s %s %s | %s |\n",
-               $1, $2, $3, $4, $5
-    } else {
-        print $0
+    pipes = gsub(/\|/, "&")
+
+    if (pipes > 3) {
+        # elimina SOLO el segundo " | "
+        sub(/\|[^|]*\|/, "|", $0)
     }
+
+    print
 }
 ' "$LOG_FILE" > "$FIXED_FILE"
 
 TOTAL=$(wc -l < "$FIXED_FILE" | tr -d ' ')
 
 echo
-echo "✔ $TOTAL certificados corregidos guardados en $FIXED_FILE"
+echo "✔ $TOTAL certificados normalizados guardados en $FIXED_FILE"
