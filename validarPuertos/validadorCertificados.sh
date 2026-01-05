@@ -3,6 +3,7 @@
 KEYSTORE="identity.jks"
 STOREPASS="identity"
 LOG_FILE="certificados_identity.log"
+FIXED_FILE="certificados_identity_fixed.log"
 
 clear
 echo "========================================"
@@ -13,23 +14,27 @@ echo
 
 > "$LOG_FILE"
 
+# Generación base (tal como ya lo tienes)
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
-awk -F',' '
-/Entry$/ {
-    alias=$1
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", alias)
+grep -E ",.*[0-9]{4},.*Entry" | \
+sed 's/, / | /g' | \
+sed 's/,$//' | \
+tee "$LOG_FILE"
 
-    fecha=$2
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", fecha)
-
-    tipo=$NF
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", tipo)
-
-    print alias " | " fecha " | " tipo
+# ---- CORRECCIÓN DE FECHAS PARTIDAS ----
+awk -F'\\|' '
+{
+    # cuenta de separadores
+    if (NF > 4) {
+        # Une campo 2 y 3 (fecha partida)
+        printf "%s | %s %s | %s |\n", $1, $2, $3, $NF
+    } else {
+        print $0
+    }
 }
-' | tee "$LOG_FILE"
+' "$LOG_FILE" > "$FIXED_FILE"
 
-TOTAL=$(wc -l < "$LOG_FILE" | tr -d ' ')
+TOTAL=$(wc -l < "$FIXED_FILE" | tr -d ' ')
 
 echo
-echo "✔ $TOTAL certificados guardados en $LOG_FILE"
+echo "✔ $TOTAL certificados corregidos guardados en $FIXED_FILE"
