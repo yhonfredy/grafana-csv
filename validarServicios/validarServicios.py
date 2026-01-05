@@ -22,7 +22,7 @@ CSV_FILES = [
 
 TIMEOUT = 5  # segundos
 
-INFLUX_BUCKET_NAME = "servicios_status"
+INFLUX_BUCKET_NAME = "EC2_status_services"
 INFLUX_MEASUREMENT = "status_check"
 
 # =========================
