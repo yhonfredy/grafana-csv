@@ -3,7 +3,7 @@
 KEYSTORE="identity.jks"
 STOREPASS="identity"
 LOG_FILE="certificados_identity.log"
-FIXED_FILE="certificados_identity_fixed.log"
+FINAL_FILE="certificados_final.log"
 
 clear
 echo "========================================"
@@ -14,28 +14,53 @@ echo
 
 > "$LOG_FILE"
 
-# -------- GENERACIÓN BASE ----------
+# 1. Generar lista base: alias, mes dia, año, tipo → separados por " | "
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# -------- NORMALIZACIÓN REAL ----------
-awk -F'\\|' '
+# 2. Normalizar: unir mes + día + año → formato español "DD mes YYYY"
+#    y dejar solo: alias | fecha_español | tipo
+awk -F' \\| ' '
+BEGIN {
+    # Mapa de meses inglés → español (minúsculas)
+    mes["jan"] = "ene"; mes["feb"] = "feb"; mes["mar"] = "mar";
+    mes["apr"] = "abr"; mes["may"] = "may"; mes["jun"] = "jun";
+    mes["jul"] = "jul"; mes["aug"] = "ago"; mes["sep"] = "sep";
+    mes["oct"] = "oct"; mes["nov"] = "nov"; mes["dec"] = "dic";
+}
 {
+    # Limpiar espacios al inicio/final
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0)
 
-    if ($2 ~ /[A-Za-z]/ && $3 ~ /^[0-9]{4}$/) {
-        printf "%s | %s %s | %s |\n",
-               $1, $2, $3, $4
-    } else {
-        print
-    }
-}
-' "$LOG_FILE" > "$FIXED_FILE"
+    alias = $1
+    mes_ing = tolower($2)
+    dia = $3
+    year = $4
+    tipo = $5
 
-TOTAL=$(wc -l < "$FIXED_FILE" | tr -d ' ')
+    # Convertir mes a español
+    mes_esp = mes[mes_ing]
+    if (mes_esp == "") mes_esp = mes_ing  # fallback si ya viene en español
+
+    # Formatear día sin cero inicial (si aplica)
+    gsub(/^0+/, "", dia)
+
+    # Construir fecha final: "13 dic 2023"
+    fecha_final = dia " " mes_esp " " year
+
+    # Imprimir: alias | fecha | tipo
+    print alias " | " fecha_final " | " tipo
+}
+' "$LOG_FILE" > "$FINAL_FILE"
+
+TOTAL=$(wc -l < "$FINAL_FILE" | tr -d ' ')
 
 echo
-echo "✔ $TOTAL certificados normalizados guardados en $FIXED_FILE"
+echo "¡Listo! $TOTAL certificados con fecha en formato español."
+echo "Guardados en: $FINAL_FILE"
+echo
+echo "=== Vista previa ==="
+cat "$FINAL_FILE"
