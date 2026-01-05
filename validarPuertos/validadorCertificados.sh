@@ -14,20 +14,20 @@ echo
 
 > "$LOG_FILE"
 
-# Generación base (tal como ya lo tienes)
+# ---------------- GENERACIÓN BASE ----------------
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# ---- CORRECCIÓN DE FECHAS PARTIDAS ----
+# ---------------- CORRECCIÓN DE FECHAS ----------------
 awk -F'\\|' '
 {
-    # cuenta de separadores
-    if (NF > 4) {
-        # Une campo 2 y 3 (fecha partida)
-        printf "%s | %s %s | %s |\n", $1, $2, $3, $NF
+    if (NF == 5) {
+        # Une Mes Día Año → "Jul 9 2019"
+        printf "%s | %s %s %s | %s |\n",
+               $1, $2, $3, $4, $5
     } else {
         print $0
     }
