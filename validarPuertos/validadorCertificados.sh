@@ -14,24 +14,22 @@ echo
 
 > "$LOG_FILE"
 
-# ------------------ GENERACIÓN BASE ------------------
+# --------- GENERACIÓN BASE ----------
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# ------------------ NORMALIZACIÓN POR CONTEO DE | ------------------
-awk '
+# --------- NORMALIZACIÓN ----------
+awk -F'\\|' '
 {
-    pipes = gsub(/\|/, "&")
-
-    if (pipes > 3) {
-        # elimina SOLO el segundo " | "
-        sub(/\|[^|]*\|/, "|", $0)
+    if (NF == 5) {
+        printf "%s | %s %s | %s |\n",
+               $1, $2, $3, $4
+    } else {
+        print
     }
-
-    print
 }
 ' "$LOG_FILE" > "$FIXED_FILE"
 
