@@ -14,17 +14,19 @@ echo
 
 > "$LOG_FILE"
 
-# --------- GENERACIÓN BASE ----------
+# -------- GENERACIÓN BASE ----------
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
 grep -E ",.*[0-9]{4},.*Entry" | \
 sed 's/, / | /g' | \
 sed 's/,$//' | \
 tee "$LOG_FILE"
 
-# --------- NORMALIZACIÓN ----------
+# -------- NORMALIZACIÓN REAL ----------
 awk -F'\\|' '
 {
-    if (NF == 5) {
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0)
+
+    if ($2 ~ /[A-Za-z]/ && $3 ~ /^[0-9]{4}$/) {
         printf "%s | %s %s | %s |\n",
                $1, $2, $3, $4
     } else {
