@@ -27,87 +27,96 @@ mes_esp=( ["jan"]="ene" ["feb"]="feb" ["mar"]="mar" ["apr"]="abr" ["may"]="may"
           ["jun"]="jun" ["jul"]="jul" ["aug"]="ago" ["sep"]="sep"
           ["oct"]="oct" ["nov"]="nov" ["dec"]="dic" )
 
-# Array para almacenar las líneas procesadas (solo en memoria)
+# Array para almacenar los certificados procesados
 declare -a certificados=()
 
-# 1. Extraer y normalizar directamente desde keytool → array
+# Procesar salida de keytool directamente
+keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
+grep -E ",.*[0-9]{4},.*Entry" | \
 while IFS= read -r line; do
-    # Filtrar líneas con certificados
-    [[ ! "$line" =~ ,[[:space:]]*[0-9]{4},.*Entry$ ]] && continue
-
-    # Quitar coma final y separar por ", "
+    # Quitar coma final
     line="${line%,}"
+
+    # Separar por ", "
     IFS=', ' read -ra partes <<< "$line"
 
-    # Buscar posición del año (campo de 4 dígitos solo)
+    # Encontrar el año (campo con exactamente 4 dígitos)
+    year=""
     pos_year=-1
     for i in "${!partes[@]}"; do
-        [[ "${partes[i]}" =~ ^[0-9]{4}$ ]] && pos_year=$i && year="${partes[i]}" && break
+        if [[ "${partes[i]}" =~ ^[0-9]{4}$ ]]; then
+            year="${partes[i]}"
+            pos_year=$i
+            break
+        fi
     done
-    ((pos_year == -1)) && continue
 
+    # Si no encontramos año, saltar (línea inválida)
+    [[ -z "$year" ]] && continue
+
+    # Tipo de entrada (último campo)
     tipo="${partes[-1]}"
 
-    # Alias: todo antes de la fecha
-    alias_parts=("${partes[@]:0:pos_year-1}")
-    alias=$(IFS=", "; echo "${alias_parts[*]}")
+    # Alias: todo lo que está antes del mes/día/año
+    alias=$(IFS=", "; echo "${partes[@]:0:pos_year-2}")
 
-    # Fecha original: mes día año (ej: Sep 12 2025)
-    mes_ing=$(echo "${partes[pos_year-1]}" | tr '[:upper:]' '[:lower:]')
+    # Mes y día: los dos campos antes del año
+    mes_ing_raw="${partes[pos_year-1]}"
     dia_raw="${partes[pos_year-2]}"
-    # Quitar posible punto final en mes español (ej: "sep.")
-    mes_ing=${mes_ing%.}
 
-    mes_final=${mes_esp[$mes_ing]:-$mes_ing}  # español si existe, sino original
-    dia=$(echo "$dia_raw" | sed 's/^0*//')   # quitar cero inicial
+    # Limpiar mes (quitar punto si existe: "sep." → "sep")
+    mes_ing=$(echo "$mes_ing_raw" | tr '[:upper:]' '[:lower:]' | sed 's/\.$//')
 
-    fecha_esp="$dia $mes_final $year"
+    # Día sin ceros iniciales para mostrar
+    dia_mostrar=$(echo "$dia_raw" | sed 's/^0*//')
+    dia_calc=$(printf "%02d" "${dia_raw#0}")  # con cero para date
 
-    # Guardar en array: alias | fecha_español | tipo | fecha_original_para_calculo
-    certificados+=("$alias | $fecha_esp | $tipo | $dia $mes_ing $year")
+    # Mes en español
+    mes_mostrar=${mes_esp[$mes_ing]:-$mes_ing}
 
-done < <(keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null)
+    # Fecha para mostrar: "12 sep 2025"
+    fecha_mostrar="$dia_mostrar $mes_mostrar $year"
+
+    # Guardar en array: alias | fecha_mostrar | tipo | year-mes-dia (para cálculo)
+    certificados+=("$alias | $fecha_mostrar | $tipo | $year-$mes_ing-$dia_calc")
+done
 
 # Si no hay certificados
 if [ ${#certificados[@]} -eq 0 ]; then
     echo "No se encontraron certificados en el keystore."
+    echo "(Posible causa: salida de keytool en formato inesperado o keystore vacío)"
     exit 1
 fi
 
 echo "Certificados encontrados: ${#certificados[@]}"
 echo
-printf "%-55s | %-16s | %-20s | %10s | [%s]\n" "ALIAS" "VENCE" "TIPO" "DIAS" "ESTADO"
+printf "%-55s | %-16s | %-20s | %10s | [%s]\n" "ALIAS" "VENCE" "TIPO" "DÍAS" "ESTADO"
 printf "%-55s-|-%-16s-|-%-20s-|-%-10s-|-%-10s\n" "-------------------------------------------------------" "----------------" "--------------------" "----------" "----------"
 
-# 2. Recorrer el array y calcular vencimiento
+# Recorrer y calcular vencimiento
 for cert in "${certificados[@]}"; do
-    IFS='|' read -r alias fecha_esp tipo fecha_calc <<< "$cert"
+    IFS='|' read -r alias fecha_mostrar tipo fecha_iso_calc <<< "$cert"
 
     alias=$(echo "$alias" | xargs)
-    fecha_esp=$(echo "$fecha_esp" | xargs)
+    fecha_mostrar=$(echo "$fecha_mostrar" | xargs)
     tipo=$(echo "$tipo" | xargs)
 
-    # Extraer día, mes (en inglés para date), año de fecha_calc
-    dia=$(echo "$fecha_calc" | awk '{print $1}')
-    mes_abbr=$(echo "$fecha_calc" | awk '{print tolower($2)}')
-    year=$(echo "$fecha_calc" | awk '{print $3}')
-
-    case $mes_abbr in
-        ene|jan) mes=01 ;; feb) mes=02 ;; mar) mes=03 ;;
-        abr|apr) mes=04 ;; may) mes=05 ;; jun) mes=06 ;;
-        jul) mes=07 ;; ago|aug) mes=08 ;; sep) mes=09 ;;
-        oct) mes=10 ;; nov) mes=11 ;; dic|dec) mes=12 ;;
-        *) mes="" ;;
+    # Convertir mes inglés a número
+    mes_ing=$(echo "$fecha_iso_calc" | cut -d'-' -f2)
+    case $mes_ing in
+        jan|ene) mes_num=01 ;; feb) mes_num=02 ;; mar) mes_num=03 ;;
+        apr|abr) mes_num=04 ;; may) mes_num=05 ;; jun) mes_num=06 ;;
+        jul) mes_num=07 ;; aug|ago) mes_num=08 ;; sep) mes_num=09 ;;
+        oct) mes_num=10 ;; nov) mes_num=11 ;; dec|dic) mes_num=12 ;;
+        *) mes_num="" ;;
     esac
 
-    if [ -z "$mes" ]; then
+    if [ -z "$mes_num" ]; then
         dias_texto="no calc."
         estado="DESCONOCIDO"
         color="\033[0;33m"
     else
-        dia_fmt=$(printf "%02d" "$dia")
-        fecha_iso="$year-$mes-$dia_fmt"
-
+        fecha_iso=$(echo "$fecha_iso_calc" | sed "s/-$mes_ing-/-$mes_num-/")
         vence_epoch=$(date -d "$fecha_iso" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$fecha_iso" +%s 2>/dev/null)
 
         if [ -n "$vence_epoch" ]; then
@@ -116,16 +125,16 @@ for cert in "${certificados[@]}"; do
 
             if [ "$dias" -lt 0 ]; then
                 estado="VENCIDO"
-                color="\033[0;31m"      # rojo
+                color="\033[0;31m"
             elif [ "$dias" -le "$DIAS_CRITICO" ]; then
                 estado="CRÍTICO"
-                color="\033[1;31m"      # rojo brillante
+                color="\033[1;31m"
             elif [ "$dias" -le "$DIAS_ALERTA" ]; then
                 estado="POR VENCER"
-                color="\033[0;33m"      # amarillo
+                color="\033[0;33m"
             else
                 estado="VIGENTE"
-                color="\033[0;32m"      # verde
+                color="\033[0;32m"
             fi
         else
             dias_texto="error date"
@@ -135,9 +144,8 @@ for cert in "${certificados[@]}"; do
     fi
 
     printf "%-55s | %-16s | %-20s | %10s | %s%-10s\033[0m\n" \
-        "$alias" "$fecha_esp" "$tipo" "$dias_texto" "$color" "$estado"
-
+        "$alias" "$fecha_mostrar" "$tipo" "$dias_texto" "$color" "$estado"
 done
 
 echo
-echo "¡Análisis completado! Todo procesado en memoria, sin archivos temporales."
+echo "¡Análisis completado! Todo en memoria, sin archivos temporales."
