@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 # =========================
 # CONFIGURACIÓN
 # =========================
-CSV_URLS = "urls.csv"
+CSV_URLS = "servicios.csv"
 TIMEOUT_CONEXION = 10
 TIMEOUT_TOTAL = 45  # Los 45 segundos que solicitaste
 
