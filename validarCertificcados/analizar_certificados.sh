@@ -23,7 +23,6 @@ declare -a lineas_base=()
 declare -a certificados_final=()
 
 # 1. Capturar la salida base (tu validarFechas.sh parte 1)
-# Usamos < <() para evitar sub-shell y llenar el array correctamente
 while IFS= read -r linea; do
     lineas_base+=("$linea")
 done < <(keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
@@ -37,15 +36,33 @@ if [ ${#lineas_base[@]} -eq 0 ]; then
     exit 1
 fi
 
-# 2. Normalizar fechas (tu awk convertido a bash, exacto)
+# 2. Normalizar fechas (tu awk convertido a bash, con manejo de alias largos)
 for linea in "${lineas_base[@]}"; do
-    IFS=' | ' read -ra partes <<< "$linea"
+    # Separar por " | " pero preservar el alias completo (todo hasta el último | antes de la fecha)
+    # Encontrar la posición del año para reconstruir alias
+    IFS='|' read -ra partes_temp <<< "$linea"
+    year=""
+    pos_year=-1
+    for i in "${!partes_temp[@]}"; do
+        if [[ "${partes_temp[i]}" =~ ^[0-9]{4}$ ]]; then
+            year="${partes_temp[i]}"
+            pos_year=$i
+            break
+        fi
+    done
+    [[ $pos_year -eq -1 ]] && continue
 
-    alias="${partes[0]}"
-    mes_ing=$(echo "${partes[1]}" | tr '[:upper:]' '[:lower:]')
-    dia="${partes[2]}"
-    year="${partes[3]}"
-    tipo="${partes[4]}"
+    # Alias: todo antes del mes (pos_year - 2 campos: mes y día)
+    alias=""
+    for ((i=0; i<pos_year-2; i++)); do
+        [[ -n "$alias" ]] && alias="$alias | "
+        alias="${alias}${partes_temp[i]}"
+    done
+    alias=$(echo "$alias" | xargs)
+
+    mes_ing=$(echo "${partes_temp[pos_year-2]}" | tr '[:upper:]' '[:lower:]' | sed 's/\.$//')
+    dia="${partes_temp[pos_year-1]}"
+    tipo="${partes_temp[-1]}"
 
     case $mes_ing in
         jan) mes_esp="ene" ;;
