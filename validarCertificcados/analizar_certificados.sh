@@ -18,30 +18,27 @@ if ! keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" >/dev/null 2>&1
     exit 1
 fi
 
-# Array para la salida intermedia (equivalente a certificados_identity.log)
+# Arrays en memoria
 declare -a lineas_base=()
+declare -a certificados_final=()
 
-# 1. Primera parte: tu validarFechas.sh (sin archivos)
-keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
-grep -E ",.*[0-9]{4},.*Entry" | \
-sed 's/, / | /g' | \
-sed 's/,$//' | \
+# 1. Capturar la salida base (tu validarFechas.sh parte 1)
+# Usamos < <() para evitar sub-shell y llenar el array correctamente
 while IFS= read -r linea; do
     lineas_base+=("$linea")
-done
+done < <(keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
+         grep -E ",.*[0-9]{4},.*Entry" | \
+         sed 's/, / | /g' | \
+         sed 's/,$//')
 
-# Si no hay certificados
+# Si no hay líneas
 if [ ${#lineas_base[@]} -eq 0 ]; then
     echo "No se encontraron certificados."
     exit 1
 fi
 
-# Array final: equivalente a certificados_final.log (tu código awk exacto)
-declare -a certificados_final=()
-
-# Procesar las líneas base con tu awk original (convertido a bucle bash)
+# 2. Normalizar fechas (tu awk convertido a bash, exacto)
 for linea in "${lineas_base[@]}"; do
-    # Separar por " | "
     IFS=' | ' read -ra partes <<< "$linea"
 
     alias="${partes[0]}"
@@ -50,7 +47,6 @@ for linea in "${lineas_base[@]}"; do
     year="${partes[3]}"
     tipo="${partes[4]}"
 
-    # Tu mapa de meses exacto
     case $mes_ing in
         jan) mes_esp="ene" ;;
         feb) mes_esp="feb" ;;
@@ -64,13 +60,10 @@ for linea in "${lineas_base[@]}"; do
         oct) mes_esp="oct" ;;
         nov) mes_esp="nov" ;;
         dec) mes_esp="dic" ;;
-        *)   mes_esp=$mes_ing ;;  # si ya viene en español, lo deja igual
+        *)   mes_esp=$mes_ing ;;
     esac
 
-    # Quitar ceros iniciales al día
     dia_sin_cero=$(echo "$dia" | sed 's/^0*//')
-
-    # Guardar en el array final: alias | fecha_español | tipo
     certificados_final+=("$alias | $dia_sin_cero $mes_esp $year | $tipo")
 done
 
@@ -79,7 +72,7 @@ echo
 printf "%-55s | %-16s | %-20s | %10s | [%s]\n" "ALIAS" "VENCE" "TIPO" "DÍAS" "ESTADO"
 printf "%-55s-|-%-16s-|-%-20s-|-%-10s-|-%-10s\n" "-------------------------------------------------------" "----------------" "--------------------" "----------" "----------"
 
-# 2. Segunda parte: tu validarVencimiento.sh (exacto, solo cambia la fuente)
+# 3. Cálculo de vencimiento (tu validarVencimiento.sh exacto)
 HOY_EPOCH=$(date +%s)
 
 for linea in "${certificados_final[@]}"; do
@@ -89,7 +82,6 @@ for linea in "${certificados_final[@]}"; do
     FECHA=$(echo "$FECHA" | xargs)
     TIPO=$(echo "$TIPO" | xargs)
 
-    # Tu código exacto de cálculo
     dia=$(echo "$FECHA" | awk '{print $1}')
     mes_abbr=$(echo "$FECHA" | awk '{print tolower($2)}')
     year=$(echo "$FECHA" | awk '{print $3}')
@@ -148,4 +140,4 @@ for linea in "${certificados_final[@]}"; do
 done
 
 echo
-echo "¡Análisis completado! Todo en memoria, sin generar archivos."
+echo "¡Análisis completado! Todo procesado en memoria, sin archivos temporales."
