@@ -7,138 +7,145 @@ DIAS_CRITICO=7
 
 clear
 echo "========================================"
-echo "ANÁLISIS COMPLETO DE CERTIFICADOS EN"
-echo "$KEYSTORE"
+echo "ANÁLISIS COMPLETO DE CERTIFICADOS EN $KEYSTORE"
 echo "Fecha actual: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "========================================"
 echo
 
-# Verificar acceso
-keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" >/dev/null 2>&1 || {
+# Verificar acceso al keystore
+if ! keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" >/dev/null 2>&1; then
     echo "ERROR: No se puede acceder al keystore"
     exit 1
-}
+fi
 
-HOY_EPOCH=$(date +%s)
+# Array para la salida intermedia (equivalente a certificados_identity.log)
+declare -a lineas_base=()
 
-# Mapa meses español/inglés → número
-declare -A mes_num
-mes_num=( ["ene"]=01 ["jan"]=01 ["feb"]=02 ["mar"]=03 ["abr"]=04 ["apr"]=04
-          ["may"]=05 ["jun"]=06 ["jul"]=07 ["ago"]=08 ["aug"]=08
-          ["sep"]=09 ["oct"]=10 ["nov"]=11 ["dic"]=12 ["dec"]=12 )
-
-declare -a certificados=()
-
-# Procesar directamente desde keytool
+# 1. Primera parte: tu validarFechas.sh (sin archivos)
 keytool -list -keystore "$KEYSTORE" -storepass "$STOREPASS" 2>/dev/null | \
-grep -i entry | \
+grep -E ",.*[0-9]{4},.*Entry" | \
+sed 's/, / | /g' | \
+sed 's/,$//' | \
 while IFS= read -r linea; do
-
-    # Quitar coma final si existe
-    linea="${linea%,}"
-
-    # Separar por coma + espacio
-    IFS=', ' read -ra campos <<< "$linea"
-
-    # Buscar el año (4 dígitos)
-    year=""
-    for campo in "${campos[@]}"; do
-        if [[ "$campo" =~ ^[0-9]{4}$ ]]; then
-            year="$campo"
-            break
-        fi
-    done
-    [[ -z "$year" ]] && continue
-
-    # Tipo (último campo)
-    tipo="${campos[-1]}"
-
-    # Todo lo anterior al año es alias + fecha
-    resto=$(IFS=', '; echo "${campos[@]:0:${#campos[@]}-2}")
-
-    # Extraer fecha: los últimos 3 campos antes del tipo (año ya encontrado)
-    # Ej: "13 dic. 2023" o "dic. 13, 2023"
-    fecha_partes=()
-    for ((i=${#campos[@]}-3; i<${#campos[@]}-1; i++)); do
-        [[ -n "${campos[i]}" ]] && fecha_partes+=("${campos[i]}")
-    done
-
-    # Detectar formato: día mes año o mes día año
-    dia=""
-    mes_abbr=""
-    if [[ ${fecha_partes[0]} =~ ^[0-9]+$ ]] && [[ ${fecha_partes[1]} =~ ^[A-Za-z]+\.?$$ ]]; then
-        # Formato: 13 dic. 2023
-        dia="${fecha_partes[0]}"
-        mes_abbr=$(echo "${fecha_partes[1]}" | tr '[:upper:]' '[:lower:]' | sed 's/\.$//')
-    elif [[ ${fecha_partes[1]} =~ ^[0-9]+$ ]] && [[ ${fecha_partes[0]} =~ ^[A-Za-z]+\.?$$ ]]; then
-        # Formato: dic. 13, 2023
-        mes_abbr=$(echo "${fecha_partes[0]}" | tr '[:upper:]' '[:lower:]' | sed 's/\.$//')
-        dia="${fecha_partes[1]}"
-    else
-        # Fallback: buscar número y mes en los últimos campos
-        for p in "${fecha_partes[@]}"; do
-            if [[ "$p" =~ ^[0-9]+$ ]]; then dia="$p"; fi
-            if [[ "$p" =~ ^[A-Za-z]+\.?$ ]]; then mes_abbr=$(echo "$p" | tr '[:upper:]' '[:lower:]' | sed 's/\.$//'); fi
-        done
-    fi
-
-    [[ -z "$dia" || -z "$mes_abbr" ]] && continue
-
-    # Alias = resto menos la fecha
-    alias=$(echo "$resto" | sed -e "s/ $dia $mes_abbr.*$//" -e "s/ $mes_abbr $dia.*$//" | xargs)
-
-    # Normalizar
-    dia_mostrar=$(echo "$dia" | sed 's/^0*//')
-    mes_mostrar=$(echo "$mes_abbr" | sed 's/\.$//')
-    num_mes=${mes_num[$mes_mostrar]}
-    [[ -z "$num_mes" ]] && continue
-
-    fecha_mostrar="$dia_mostrar $mes_mostrar $year"
-    fecha_iso="$year-$num_mes-$(printf "%02d" "$dia")"
-
-    certificados+=("$alias | $fecha_mostrar | $tipo | $fecha_iso")
+    lineas_base+=("$linea")
 done
 
 # Si no hay certificados
-(( ${#certificados[@]} == 0 )) && {
-    echo "No se encontraron certificados o formato de fecha desconocido."
+if [ ${#lineas_base[@]} -eq 0 ]; then
+    echo "No se encontraron certificados."
     exit 1
-}
+fi
 
-echo "Certificados encontrados: ${#certificados[@]}"
+# Array final: equivalente a certificados_final.log (tu código awk exacto)
+declare -a certificados_final=()
+
+# Procesar las líneas base con tu awk original (convertido a bucle bash)
+for linea in "${lineas_base[@]}"; do
+    # Separar por " | "
+    IFS=' | ' read -ra partes <<< "$linea"
+
+    alias="${partes[0]}"
+    mes_ing=$(echo "${partes[1]}" | tr '[:upper:]' '[:lower:]')
+    dia="${partes[2]}"
+    year="${partes[3]}"
+    tipo="${partes[4]}"
+
+    # Tu mapa de meses exacto
+    case $mes_ing in
+        jan) mes_esp="ene" ;;
+        feb) mes_esp="feb" ;;
+        mar) mes_esp="mar" ;;
+        apr) mes_esp="abr" ;;
+        may) mes_esp="may" ;;
+        jun) mes_esp="jun" ;;
+        jul) mes_esp="jul" ;;
+        aug) mes_esp="ago" ;;
+        sep) mes_esp="sep" ;;
+        oct) mes_esp="oct" ;;
+        nov) mes_esp="nov" ;;
+        dec) mes_esp="dic" ;;
+        *)   mes_esp=$mes_ing ;;  # si ya viene en español, lo deja igual
+    esac
+
+    # Quitar ceros iniciales al día
+    dia_sin_cero=$(echo "$dia" | sed 's/^0*//')
+
+    # Guardar en el array final: alias | fecha_español | tipo
+    certificados_final+=("$alias | $dia_sin_cero $mes_esp $year | $tipo")
+done
+
+echo "Certificados encontrados: ${#certificados_final[@]}"
 echo
 printf "%-55s | %-16s | %-20s | %10s | [%s]\n" "ALIAS" "VENCE" "TIPO" "DÍAS" "ESTADO"
-printf "%-.55s-+-%-.16s-+-%-.20s-+-%-.10s-+-%-.10s\n" "-------------------------------------------------------" "----------------" "--------------------" "----------" "----------"
+printf "%-55s-|-%-16s-|-%-20s-|-%-10s-|-%-10s\n" "-------------------------------------------------------" "----------------" "--------------------" "----------" "----------"
 
-# Mostrar y calcular
-for cert in "${certificados[@]}"; do
-    IFS='|' read -r alias fecha_mostrar tipo fecha_iso <<< "$cert"
-    alias=$(echo "$alias" | xargs)
-    fecha_mostrar=$(echo "$fecha_mostrar" | xargs)
-    tipo=$(echo "$tipo" | xargs)
+# 2. Segunda parte: tu validarVencimiento.sh (exacto, solo cambia la fuente)
+HOY_EPOCH=$(date +%s)
 
-    vence_epoch=$(date -d "$fecha_iso" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$fecha_iso" +%s 2>/dev/null)
+for linea in "${certificados_final[@]}"; do
+    IFS="|" read -r ALIAS FECHA TIPO _ <<< "$linea"
 
-    if [[ -n "$vence_epoch" ]]; then
-        dias=$(( (vence_epoch - HOY_EPOCH) / 86400 ))
-        dias_texto="$dias días"
+    ALIAS=$(echo "$ALIAS" | xargs)
+    FECHA=$(echo "$FECHA" | xargs)
+    TIPO=$(echo "$TIPO" | xargs)
 
-        if (( dias < 0 )); then
-            estado="VENCIDO";   color="\033[0;31m"
-        elif (( dias <= DIAS_CRITICO )); then
-            estado="CRÍTICO";   color="\033[1;31m"
-        elif (( dias <= DIAS_ALERTA )); then
-            estado="POR VENCER"; color="\033[0;33m"
-        else
-            estado="VIGENTE";   color="\033[0;32m"
-        fi
+    # Tu código exacto de cálculo
+    dia=$(echo "$FECHA" | awk '{print $1}')
+    mes_abbr=$(echo "$FECHA" | awk '{print tolower($2)}')
+    year=$(echo "$FECHA" | awk '{print $3}')
+
+    case $mes_abbr in
+        ene|jan) mes=01 ;;
+        feb) mes=02 ;;
+        mar) mes=03 ;;
+        abr|apr) mes=04 ;;
+        may) mes=05 ;;
+        jun) mes=06 ;;
+        jul) mes=07 ;;
+        ago|aug) mes=08 ;;
+        sep) mes=09 ;;
+        oct) mes=10 ;;
+        nov) mes=11 ;;
+        dic|dec) mes=12 ;;
+        *) mes="" ;;
+    esac
+
+    if [ -z "$mes" ]; then
+        DIAS_TEXTO="no calculable"
+        ESTADO="DESCONOCIDO"
+        COLOR="\033[0;33m"
     else
-        dias_texto="error"; estado="ERROR"; color="\033[1;35m"
+        dia_fmt=$(printf "%02d" "$dia")
+        VENCE_EPOCH=$(date -d "$year-$mes-$dia_fmt" +%s 2>/dev/null || \
+                      date -j -f "%Y-%m-%d" "$year-$mes-$dia_fmt" +%s 2>/dev/null)
+
+        if [ -n "$VENCE_EPOCH" ]; then
+            DIAS=$(( (VENCE_EPOCH - HOY_EPOCH) / 86400 ))
+            DIAS_TEXTO="$DIAS días"
+
+            if [ "$DIAS" -lt 0 ]; then
+                ESTADO="VENCIDO"
+                COLOR="\033[0;31m"
+            elif [ "$DIAS" -le "$DIAS_CRITICO" ]; then
+                ESTADO="CRÍTICO"
+                COLOR="\033[1;31m"
+            elif [ "$DIAS" -le "$DIAS_ALERTA" ]; then
+                ESTADO="POR VENCER"
+                COLOR="\033[0;33m"
+            else
+                ESTADO="VIGENTE"
+                COLOR="\033[0;32m"
+            fi
+        else
+            DIAS_TEXTO="no calculable"
+            ESTADO="ERROR DATE"
+            COLOR="\033[1;35m"
+        fi
     fi
 
-    printf "%-55s | %-16s | %-20s | %10s | %s%-10s\033[0m\n" \
-        "$alias" "$fecha_mostrar" "$tipo" "$dias_texto" "$color" "$estado"
+    printf "%-55s | %-16s | %-20s | %10s | %s[%s]\033[0m\n" \
+        "$ALIAS" "$FECHA" "$TIPO" "$DIAS_TEXTO" "$COLOR" "$ESTADO"
 done
 
 echo
-echo "¡Análisis completado sin archivos temporales!"
+echo "¡Análisis completado! Todo en memoria, sin generar archivos."
