@@ -1,0 +1,21 @@
+#group,false,false,false,false,false,false,false,false,false
+#datatype,string,double,string,string,string,string,dateTime:RFC3339,string,string
+#default,,,,,,,,,
+,cert_id,dias_restantes,entry_name,entry_type,estado,nombre_cert,time,valid_until,valid_until_tag
+,1,226,ambientedesa.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=*.segurosbolivar.com.co,2026-01-29T13:39:55.263Z,2026-09-12 16:26:27,2026-09-12_16_26_27
+,1,114,ambientepruebas.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=ambientepruebas.segurosbolivar.com,2026-01-29T13:39:55.263Z,2026-05-23 20:36:01,2026-05-23_20_36_01
+,1,548,soa01sbcc06,PrivateKeyEntry,VIGENTE,CN=SOA01SBCC06,2026-01-29T13:39:55.263Z,2027-07-31 23:32:12,2027-07-31_23_32_12
+,1,-178,ac,trustedCertEntry,VENCIDO,CN=AC SUBORDINADA DEMO 3 CERTICAMARA S.A,2026-01-29T13:39:55.263Z,2025-08-03 13:50:00,2025-08-03_13_50_00
+,1,-433,star.cen.biz,trustedCertEntry,VENCIDO,CN=*.cen.biz,2026-01-29T13:39:55.263Z,2024-11-21 22:14:38,2024-11-21_22_14_38
+,1,-337,star.sisafitra.gov.co,trustedCertEntry,VENCIDO,CN=*.sisafitra.gov.co,2026-01-29T13:39:55.263Z,2025-02-25 23:59:59,2025-02-25_23_59_59
+,1,1154,ac,trustedCertEntry,VIGENTE,CN=AC RAIZ DEMO CERTICAMARA S.A,2026-01-29T13:39:55.263Z,2029-03-28 17:50:22,2029-03-28_17_50_22
+,1,3005,ca-raiz,trustedCertEntry,VIGENTE,CN=CA-Raiz Davivienda,2026-01-29T13:39:55.263Z,2034-04-22 15:15:46,2034-04-22_15_15_46
+,1,377,experian.sign,trustedCertEntry,VIGENTE,CN=experian.sign,2026-01-29T13:39:55.263Z,2027-02-10 23:51:14,2027-02-10_23_51_14
+,1,1919,go,trustedCertEntry,VIGENTE,CN=Go Daddy Secure Certificate Authority - G2,2026-01-29T13:39:55.263Z,2031-05-03 07:00:00,2031-05-03_07_00_00
+,1,4354,go,trustedCertEntry,VIGENTE,CN=Go Daddy Root Certificate Authority - G2,2026-01-29T13:39:55.263Z,2037-12-31 23:59:59,2037-12-31_23_59_59
+,1,1203,google-auth,trustedCertEntry,VIGENTE,google-auth,2026-01-29T13:39:55.263Z,2029-05-16 17:52:35,2029-05-16_17_52_35
+,2,1026,ambientedesa.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=GlobalSign RSA OV SSL CA 2018,2026-01-29T13:39:55.263Z,2028-11-21 00:00:00,2028-11-21_00_00_00
+,2,234,ambientepruebas.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=GlobalSign Extended Validation CA - SHA256 - G3,2026-01-29T13:39:55.263Z,2026-09-21 00:00:00,2026-09-21_00_00_00
+,2,806,soa01sbcc06,PrivateKeyEntry,VIGENTE,CN=BOLIVAR SEGURIDAD TI,2026-01-29T13:39:55.263Z,2028-04-14 16:24:29,2028-04-14_16_24_29
+,3,1143,ambientedesa.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=GlobalSign,2026-01-29T13:39:55.263Z,2029-03-18 10:00:00,2029-03-18_10_00_00
+,3,1143,ambientepruebas.segurosbolivar.com,PrivateKeyEntry,VIGENTE,CN=GlobalSign,2026-01-29T13:39:55.263Z,2029-03-18 10:00:00,2029-03-18_10_00_00
