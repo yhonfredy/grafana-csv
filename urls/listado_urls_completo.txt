@@ -1,192 +1,144 @@
-Terceros URL’s Forms DNS F5;http://prodterceros.bolnet.com.co/forms/
-Terceros URL’s Forms Server1;http://10.1.5.81:6012/forms/ Terceros URL’s
-Forms Server2;http://10.1.5.88:6013/forms/ Terceros URL’s Forms
-Cluster;http://10.1.5.81:7767/forms/ Terceros URL’s Forms
-Cluster_88;http://10.1.5.88:7767/forms/ Terceros URL’s Reports DNS
-F5;http://prodterceros.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-Terceros URL’s Reports
-Server1;http://10.1.5.81:6014/reports/rwservlet?server=rep_prodias1&report=test.rdf&destype=cache&desformat=pdf
-Terceros URL’s Reports
-Server2;http://10.1.5.88:6015/reports/rwservlet?server=rep_prodias2&report=test.rdf&destype=cache&desformat=pdf
-Terceros URL’s Reports
-Cluster;http://10.1.5.81:7767/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-Terceros URL’s Reports
-Cluster_88;http://10.1.5.88:7767/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-Terceros URL’s Reports Server1;http://10.1.5.81:7767/ Terceros OHS
-Server2;http://10.1.5.88:7767/ Capi OHS DNS
-F5;http://prodcapi.bolnet.com.co/forms/ Capi URL’s Forms
-Server1;http://10.1.5.81:6022/forms/ Capi URL’s Forms
-Server2;http://10.1.5.88:6023/forms/ Capi URL’s Forms
-Cluster;http://10.1.5.81:7757/forms/ Capi URL’s Forms
-Cluster_88;http://10.1.5.88:7757/forms/ Capi URL’s Forms DNS
-F5;http://prodcapi.bolnet.com.co/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
-Capi URL’s Reports
-Server1;http://10.1.5.81:6024/reports/rwservlet?server=rep_capi1&report=test.rdf&destype=cache&desformat=pdf
-Capi URL’s Reports
-Server2;http://10.1.5.88:6025/reports/rwservlet?server=rep_capi2&report=test.rdf&destype=cache&desformat=pdf
-Capi URL’s Reports
-Cluster;http://10.1.5.81:7757/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
-Capi URL’s Reports
-Cluster_88;http://10.1.5.88:7757/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
-Capi URL’s Reports Server1;http://10.1.5.81:7757/ Capi OHS
-Server2;http://10.1.5.88:7757/ Préstamos OHS DNS
-F5;http://prodprest.bolnet.com.co/forms/ Préstamos URL’s Forms
-Server1;http://10.1.5.81:6032/forms/ Préstamos URL’s Forms
-Server2;http://10.1.5.88:6033/forms/ Préstamos URL’s Forms
-Cluster;http://10.1.5.81:7747/forms/ Préstamos URL’s Forms
-Cluster_88;http://10.1.5.88:7747/forms/ Préstamos URL’s Forms DNS
-F5;http://prodprest.bolnet.com.co/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
-Préstamos URL’s Reports
-Server1;http://10.1.5.81:6034/reports/rwservlet?server=rep_prest1&report=test.rdf&destype=cache&desformat=pdf
-Préstamos URL’s Reports
-Server2;http://10.1.5.88:6035/reports/rwservlet?server=rep_prest2&report=test.rdf&destype=cache&desformat=pdf
-Préstamos URL’s Reports
-Cluster;http://10.1.5.81:7747/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
-Préstamos URL’s Reports
-Cluster_88;http://10.1.5.88:7747/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
-Préstamos URL’s Reports Server1;http//10.1.5.81:7747/ Préstamos OHS
-Server2;http//10.1.5.88:7747/ SIAB OHS DNS
-F5;http://prodsiab.bolnet.com.co/forms/ SIAB URL’s Forms
-Server1;http://10.1.3.100:6002/forms/ SIAB URL’s Forms
-Server2;http://10.1.3.101:6002/forms/ SIAB URL’s Forms
-Server3;http://10.1.3.100:6003/forms/ SIAB URL’s Forms
-Server4;http://10.1.3.101:6003/forms/ SIAB URL’s Forms
-Cluster;http://10.1.3.100:7757/forms/ SIAB URL’s Forms
-Cluster_101;http://10.1.3.101:7757/forms/ SIAB URL’s Forms DNS
-F5;http://prodsiab.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Server1;http://10.1.3.100:6004/reports/rwservlet?server=rep_siab1&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Server2;http://10.1.3.101:6004/reports/rwservlet?server=rep_siab2&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Server3;http://10.1.3.100:6005/reports/rwservlet?server=rep_siab12&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Server4;http://10.1.3.101:6005/reports/rwservlet?server=rep_siab22&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Cluster;http://10.1.3.100:7757/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports
-Cluster_101;http://10.1.3.101:7757/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SIAB URL’s Reports Server1;http://10.1.3.100:7757/ SIAB OHS
-Server2;http://10.1.3.101:7757/ PARP OHS DNS
-F5;http://prodparp.bolnet.com.co/forms/ PARP URL’s Forms
-Server1;http://10.1.3.102:6002/forms/ PARP URL’s Forms
-Server2;http://10.1.3.103:6002/forms/ PARP URL’s Forms
-Cluster;http://10.1.3.102:7757/forms/ PARP URL’s Forms
-Cluster_103;http://10.1.3.103:7757/forms/ PARP URL’s Forms DNS
-F5;http://prodparp.bolnet.com.co/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf
-PARP URL’s Reports
-Server1;http://10.1.3.102:6003/reports/rwservlet?server=reptool_parpprod1&report=test.rdf&destype=cache&desformat=pdf
-PARP URL’s Reports
-Server2;http://10.1.3.103:6003/reports/rwservlet?server=reptool_parpprod2&report=test.rdf&destype=cache&desformat=pdf
-PARP URL’s Reports
-Cluster;http://10.1.3.102:7757/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf
-PARP URL’s Reports
-Cluster_103;http://10.1.3.103:7757/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf
-PARP URL’s Reports Server1;http://10.1.3.102:7757/ PARP OHS
-Server2;http://10.1.3.103:7757/ SVPA OHS DNS
-F5;http://svpaprod.bolnet.com.co/forms/ SVPA URL’s Forms
-Server1;http://10.1.3.104:6002/forms/ SVPA URL’s Forms
-Server2;http://10.1.3.105:6002/forms/ - NO SVPA URL’s Forms
-Cluster;http://10.1.3.104:7790/forms/ SVPA URL’s Forms
-Cluster_105;http://10.1.3.105:7790/forms/ - NO SVPA URL’s Forms DNS
-F5;http://svpaprod.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SVPA URL’s Reports
-Server1;http://10.1.3.104:6004/reports/rwservlet?server=rep_wls_reports_svpa&report=test.rdf&destype=cache&desformat=pdf
-SVPA URL’s Reports
-Server2;http://10.1.3.105:6004/reports/rwservlet?server=rep_wls_reports_svpa2&report=test.rdf&destype=cache&desformat=pdf
-NO SVPA URL’s Reports
-Cluster;http://10.1.3.104:7790/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SVPA URL’s Reports
-Cluster_105;http://10.1.3.105:7790/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-NO SVPA URL’s Reports Server1;http://10.1.3.104:7790/ SVPA OHS
-Server2;http://10.1.3.105:7790/ Conciso/Concilia OHS DNS
-F5;http://prodconciso.bolnet.com.co/forms/ Conciso/Concilia URL’s Forms
-Server1;http://10.1.3.104:6012/forms/ Conciso/Concilia URL’s Forms
-Server2;http://10.1.3.105:6012/forms/ Conciso/Concilia URL’s Forms
-Cluster;http://10.1.3.104:7727/forms/ Conciso/Concilia URL’s Forms
-Cluster_105;http://10.1.3.105:7727/forms/ Conciso/Concilia URL’s Forms
-DNS
-F5;http://prodconciso.bolnet.com.co/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
-Conciso/Concilia URL’s Reports
-Server1;http://10.1.3.104:6014/reports/rwservlet?server=rep_conciprod1&report=test.rdf&destype=cache&desformat=pdf
-Conciso/Concilia URL’s Reports
-Server2;http://10.1.3.105:6014/reports/rwservlet?server=rep_conciprod2&report=test.rdf&destype=cache&desformat=pdf
-Conciso/Concilia URL’s Reports
-Cluster;http://10.1.3.104:7727/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
-Conciso/Concilia URL’s Reports
-Cluster_105;http://10.1.3.105:7727/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
-Conciso/Concilia URL’s Reports Server1;http://10.1.3.104:7727/
-Conciso/Concilia OHS Server2;http://10.1.3.105:7727/ Saghi OHS DNS
-F5;http://prodsaghi.bolnet.com.co/forms/ Saghi URL’s Forms
-Server1;http://10.1.3.144:6012/forms/ Saghi URL’s Forms
-Server2;http://10.1.3.145:6012/forms/ Saghi URL’s Forms
-Cluster;http://10.1.3.144:7727/forms/ Saghi URL’s Forms
-Cluster_145;http://10.1.3.145:7727/forms/ Saghi URL’s Forms DNS
-F5;http://prodsaghi.bolnet.com.co/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
-Saghi URL’s Reports
-Server1;http://10.1.3.144:6014/reports/rwservlet?server=rep_wls_reports_saghiprod1&report=test.rdf&destype=cache&desformat=pdf
-Saghi URL’s Reports
-Server2;http://10.1.3.145:6014/reports/rwservlet?server=rep_wls_reports_saghiprod2&report=test.rdf&destype=cache&desformat=pdf
-Saghi URL’s Reports
-Cluster;http://10.1.3.144:7727/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
-Saghi URL’s Reports
-Cluster_145;http://10.1.3.145:7727/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
-Saghi URL’s Reports Server1;http://10.1.3.144:7727/ Saghi OHS
-Server2;http://10.1.3.145:7727/ Sitri OHS DNS
-F5;http://prodsitri.bolnet.com.co/forms/ Sitri URL’s Forms
-Server1;http://10.1.3.144:6002/forms/ Sitri URL’s Forms
-Server2;http://10.1.3.145:6002/forms/ Sitri URL’s Forms
-Cluster;http://10.1.3.144:7717/forms/ Sitri URL’s Forms
-Cluster_145;http://10.1.3.145:7717/forms/ Sitri URL’s Forms DNS
-F5;http://prodsitri.bolnet.com.co/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
-Sitri URL’s Reports
-Server1;http://10.1.3.144:6004/reports/rwservlet?server=rep_wls_reports_sitriprod1&report=test.rdf&destype=cache&desformat=pdf
-Sitri URL’s Reports
-Server2;http://10.1.3.145:6004/reports/rwservlet?server=rep_wls_reports_sitriprod2&report=test.rdf&destype=cache&desformat=pdf
-Sitri URL’s Reports
-Cluster;http://10.1.3.144:7717/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
-Sitri URL’s Reports
-Cluster_145;http://10.1.3.145:7717/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
-Sitri URL’s Reports Server1;http://10.1.3.144:7717/ Sitri OHS
-Server2;http://10.1.3.145:7717/ Siebel OHS DNS
-F5;http://prodsiebel.bolnet.com.co/forms/ Siebel URL’s Forms
-Server1;http://10.1.3.144:6022/forms/ Siebel URL’s Forms
-Server2;http://10.1.3.145:6022/forms/ Siebel URL’s Forms
-Cluster;http://10.1.3.144:7747/forms/ Siebel URL’s Forms
-Cluster_145;http://10.1.3.145:7747/forms/ Siebel URL’s Forms
-Server1;http://10.1.3.144:7747/ Siebel OHS
-Server2;http://10.1.3.145:7747 Control de Cambios - SIPLA OHS DNS
-F5;http://prodsipla.bolnet.com.co/forms/ Control de Cambios - SIPLA
-URL’s Forms Server1;http://10.1.3.144:6032/forms/ Control de Cambios -
-SIPLA URL’s Forms Server2;http://10.1.3.145:6032/forms/ Control de
-Cambios - SIPLA URL’s Forms Cluster;http://10.1.3.144:7737/forms/
-Control de Cambios - SIPLA URL’s Forms
-Cluster_145;http://10.1.3.145:7737/forms Control de Cambios - SIPLA
-URL’s Forms DNS
-F5;http://prodsipla.bolnet.com.co/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
-Control de Cambios - SIPLA URL’s Reports
-Server1;http://10.1.3.144:6034/reports/rwservlet?server=repsiplaprod1&report=test.rdf&destype=cache&desformat=pdf
-Control de Cambios - SIPLA URL’s Reports
-Server2;http://10.1.3.145:6034/reports/rwservlet?server=repsiplaprod2&report=test.rdf&destype=cache&desformat=pdf
-Control de Cambios - SIPLA URL’s Reports
-Cluster;http://10.1.3.144:7737/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
-Control de Cambios - SIPLA URL’s Reports
-Cluster_145;http://10.1.3.145:7737/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
-Control de Cambios - SIPLA URL’s Reports Server1;http://10.1.3.144:7737/
-Control de Cambios - SIPLA OHS Server2;http://10.1.3.145:7737/ SAI OHS
-DNS F5;http://saiprod.bolnet.com.co/forms/ SAI URL’s Forms
-Server1;http://10.1.5.123:9001/forms/ SAI URL’s Forms
-Server2;http://10.1.5.117:9001/forms/ SAI URL’s Forms
-Cluster;http://10.1.5.123:7780/forms/ SAI URL’s Forms
-Cluster_117;http://10.1.5.117:7780/forms/ SAI URL’s Forms DNS
-F5;http://saiprod.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SAI URL’s Reports
-Server1;http://10.1.5.123:9002/reports/rwservlet?server=rep_tools_reports_sai&report=test.rdf&destype=cache&desformat=pdf
-SAI URL’s Reports
-Server2;http://10.1.5.117:9002/reports/rwservlet?server=rep_tools_reports_sai2&report=test.rdf&destype=cache&desformat=pdf
-SAI URL’s Reports
-Cluster;http://10.1.5.123:7779/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SAI URL’s Reports
-Cluster_117;http://10.1.5.117:7779/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
-SAI OHS Server1;http://10.1.5.123:7780/ SAI OHS
-Server2;http://10.1.5.117:7780/
+Nombre;URL
+Terceros URL's Forms DNS F5;http://prodterceros.bolnet.com.co/forms/
+Terceros URL's Forms Server1;http://10.1.5.81:6012/forms/
+Terceros URL's Forms Server2;http://10.1.5.88:6013/forms/
+Terceros URL's Forms Cluster;http://10.1.5.81:7767/forms/
+Terceros URL's Forms Cluster_88;http://10.1.5.88:7767/forms/
+Terceros URL's Reports DNS F5;http://prodterceros.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+Terceros URL's Reports Server1;http://10.1.5.81:6014/reports/rwservlet?server=rep_prodias1&report=test.rdf&destype=cache&desformat=pdf
+Terceros URL's Reports Server2;http://10.1.5.88:6015/reports/rwservlet?server=rep_prodias2&report=test.rdf&destype=cache&desformat=pdf
+Terceros URL's Reports Cluster;http://10.1.5.81:7767/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+Terceros URL's Reports Cluster_88;http://10.1.5.88:7767/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+Terceros URL's Reports Server1;http://10.1.5.81:7767/
+Terceros OHS Server2;http://10.1.5.88:7767/
+Capi OHS DNS F5;http://prodcapi.bolnet.com.co/forms/
+Capi URL's Forms Server1;http://10.1.5.81:6022/forms/
+Capi URL's Forms Server2;http://10.1.5.88:6023/forms/
+Capi URL's Forms Cluster;http://10.1.5.81:7757/forms/
+Capi URL's Forms Cluster_88;http://10.1.5.88:7757/forms/
+Capi URL's Forms DNS F5;http://prodcapi.bolnet.com.co/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
+Capi URL's Reports Server1;http://10.1.5.81:6024/reports/rwservlet?server=rep_capi1&report=test.rdf&destype=cache&desformat=pdf
+Capi URL's Reports Server2;http://10.1.5.88:6025/reports/rwservlet?server=rep_capi2&report=test.rdf&destype=cache&desformat=pdf
+Capi URL's Reports Cluster;http://10.1.5.81:7757/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
+Capi URL's Reports Cluster_88;http://10.1.5.88:7757/reports/rwservlet?server=cluster_reports_capi&report=test.rdf&destype=cache&desformat=pdf
+Capi URL's Reports Server1;http://10.1.5.81:7757/
+Capi OHS Server2;http://10.1.5.88:7757/
+Préstamos OHS DNS F5;http://prodprest.bolnet.com.co/forms/
+Préstamos URL's Forms Server1;http://10.1.5.81:6032/forms/
+Préstamos URL's Forms Server2;http://10.1.5.88:6033/forms/
+Préstamos URL's Forms Cluster;http://10.1.5.81:7747/forms/
+Préstamos URL's Forms Cluster_88;http://10.1.5.88:7747/forms/
+Préstamos URL's Forms DNS F5;http://prodprest.bolnet.com.co/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
+Préstamos URL's Reports Server1;http://10.1.5.81:6034/reports/rwservlet?server=rep_prest1&report=test.rdf&destype=cache&desformat=pdf
+Préstamos URL's Reports Server2;http://10.1.5.88:6035/reports/rwservlet?server=rep_prest2&report=test.rdf&destype=cache&desformat=pdf
+Préstamos URL's Reports Cluster;http://10.1.5.81:7747/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
+Préstamos URL's Reports Cluster_88;http://10.1.5.88:7747/reports/rwservlet?server=cluster_reports_prest&report=test.rdf&destype=cache&desformat=pdf
+Préstamos URL's Reports Server1;http//10.1.5.81:7747/ 
+Préstamos OHS Server2;http//10.1.5.88:7747/
+SIAB OHS DNS F5;http://prodsiab.bolnet.com.co/forms/
+SIAB URL's Forms Server1;http://10.1.3.100:6002/forms/
+SIAB URL's Forms Server2;http://10.1.3.101:6002/forms/
+SIAB URL's Forms Server3;http://10.1.3.100:6003/forms/
+SIAB URL's Forms Server4;http://10.1.3.101:6003/forms/
+SIAB URL's Forms Cluster;http://10.1.3.100:7757/forms/
+SIAB URL's Forms Cluster_101;http://10.1.3.101:7757/forms/
+SIAB URL's Forms DNS F5;http://prodsiab.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Server1;http://10.1.3.100:6004/reports/rwservlet?server=rep_siab1&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Server2;http://10.1.3.101:6004/reports/rwservlet?server=rep_siab2&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Server3;http://10.1.3.100:6005/reports/rwservlet?server=rep_siab12&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Server4;http://10.1.3.101:6005/reports/rwservlet?server=rep_siab22&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Cluster;http://10.1.3.100:7757/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Cluster_101;http://10.1.3.101:7757/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SIAB URL's Reports Server1;http://10.1.3.100:7757/
+SIAB OHS Server2;http://10.1.3.101:7757/
+PARP OHS DNS F5;http://prodparp.bolnet.com.co/forms/
+PARP URL's Forms Server1;http://10.1.3.102:6002/forms/
+PARP URL's Forms Server2;http://10.1.3.103:6002/forms/
+PARP URL's Forms Cluster;http://10.1.3.102:7757/forms/
+PARP URL's Forms Cluster_103;http://10.1.3.103:7757/forms/
+PARP URL's Forms DNS F5;http://prodparp.bolnet.com.co/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf
+PARP URL's Reports Server1;http://10.1.3.102:6003/reports/rwservlet?server=reptool_parpprod1&report=test.rdf&destype=cache&desformat=pdf
+PARP URL's Reports Server2;http://10.1.3.103:6003/reports/rwservlet?server=reptool_parpprod2&report=test.rdf&destype=cache&desformat=pdf 
+PARP URL's Reports Cluster;http://10.1.3.102:7757/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf 
+PARP URL's Reports Cluster_103;http://10.1.3.103:7757/reports/rwservlet?server=cluster_reports_parp&report=test.rdf&destype=cache&desformat=pdf 
+PARP URL's Reports Server1;http://10.1.3.102:7757/
+PARP OHS Server2;http://10.1.3.103:7757/
+SVPA OHS DNS F5;http://svpaprod.bolnet.com.co/forms/
+SVPA URL's Forms Server1;http://10.1.3.104:6002/forms/
+SVPA URL's Forms Server2;http://10.1.3.105:6002/forms/
+SVPA URL's Forms Cluster;http://10.1.3.104:7790/forms/
+SVPA URL's Forms Cluster_105;http://10.1.3.105:7790/forms/
+SVPA URL's Forms DNS F5;http://svpaprod.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SVPA URL's Reports Server1;http://10.1.3.104:6004/reports/rwservlet?server=rep_wls_reports_svpa&report=test.rdf&destype=cache&desformat=pdf
+SVPA URL's Reports Server2;http://10.1.3.105:6004/reports/rwservlet?server=rep_wls_reports_svpa2&report=test.rdf&destype=cache&desformat=pdf
+SVPA URL's Reports Cluster;http://10.1.3.104:7790/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf 
+SVPA URL's Reports Cluster_105;http://10.1.3.105:7790/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SVPA URL's Reports Server1;http://10.1.3.104:7790/
+SVPA OHS Server2;http://10.1.3.105:7790/
+Conciso/Concilia OHS DNS F5;http://prodconciso.bolnet.com.co/forms/
+Conciso/Concilia URL's Forms Server1;http://10.1.3.104:6012/forms/
+Conciso/Concilia URL's Forms Server2;http://10.1.3.105:6012/forms/ 
+Conciso/Concilia URL's Forms Cluster;http://10.1.3.104:7727/forms/
+Conciso/Concilia URL's Forms Cluster_105;http://10.1.3.105:7727/forms/
+Conciso/Concilia URL's Forms DNS F5;http://prodconciso.bolnet.com.co/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
+Conciso/Concilia URL's Reports Server1;http://10.1.3.104:6014/reports/rwservlet?server=rep_conciprod1&report=test.rdf&destype=cache&desformat=pdf
+Conciso/Concilia URL's Reports Server2;http://10.1.3.105:6014/reports/rwservlet?server=rep_conciprod2&report=test.rdf&destype=cache&desformat=pdf
+Conciso/Concilia URL's Reports Cluster;http://10.1.3.104:7727/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
+Conciso/Concilia URL's Reports Cluster_105;http://10.1.3.105:7727/reports/rwservlet?server=cluster_reports_conci&report=test.rdf&destype=cache&desformat=pdf
+Conciso/Concilia URL's Reports Server1;http://10.1.3.104:7727/
+Conciso/Concilia OHS Server2;http://10.1.3.105:7727/
+Saghi OHS DNS F5;http://prodsaghi.bolnet.com.co/forms/
+Saghi URL's Forms Server1;http://10.1.3.144:6012/forms/
+Saghi URL's Forms Server2;http://10.1.3.145:6012/forms/
+Saghi URL's Forms Cluster;http://10.1.3.144:7727/forms/
+Saghi URL's Forms Cluster_145;http://10.1.3.145:7727/forms/
+Saghi URL's Forms DNS F5;http://prodsaghi.bolnet.com.co/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
+Saghi URL's Reports Server1;http://10.1.3.144:6014/reports/rwservlet?server=rep_wls_reports_saghiprod1&report=test.rdf&destype=cache&desformat=pdf
+Saghi URL's Reports Server2;http://10.1.3.145:6014/reports/rwservlet?server=rep_wls_reports_saghiprod2&report=test.rdf&destype=cache&desformat=pdf
+Saghi URL's Reports Cluster;http://10.1.3.144:7727/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
+Saghi URL's Reports Cluster_145;http://10.1.3.145:7727/reports/rwservlet?server=cluster_reports_saghi&report=test.rdf&destype=cache&desformat=pdf
+Saghi URL's Reports Server1;http://10.1.3.144:7727/
+Saghi OHS Server2;http://10.1.3.145:7727/
+Sitri OHS DNS F5;http://prodsitri.bolnet.com.co/forms/
+Sitri URL's Forms Server1;http://10.1.3.144:6002/forms/
+Sitri URL's Forms Server2;http://10.1.3.145:6002/forms/
+Sitri URL's Forms Cluster;http://10.1.3.144:7717/forms/
+Sitri URL's Forms Cluster_145;http://10.1.3.145:7717/forms/
+Sitri URL's Forms DNS F5;http://prodsitri.bolnet.com.co/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
+Sitri URL's Reports Server1;http://10.1.3.144:6004/reports/rwservlet?server=rep_wls_reports_sitriprod1&report=test.rdf&destype=cache&desformat=pdf
+Sitri URL's Reports Server2;http://10.1.3.145:6004/reports/rwservlet?server=rep_wls_reports_sitriprod2&report=test.rdf&destype=cache&desformat=pdf
+Sitri URL's Reports Cluster;http://10.1.3.144:7717/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
+Sitri URL's Reports Cluster_145;http://10.1.3.145:7717/reports/rwservlet?server=cluster_reports_sitri&report=test.rdf&destype=cache&desformat=pdf
+Sitri URL's Reports Server1;http://10.1.3.144:7717/
+Sitri OHS Server2;http://10.1.3.145:7717/
+Siebel OHS DNS F5;http://prodsiebel.bolnet.com.co/forms/
+Siebel URL's Forms Server1;http://10.1.3.144:6022/forms/
+Siebel URL's Forms Server2;http://10.1.3.145:6022/forms/
+Siebel URL's Forms Cluster;http://10.1.3.144:7747/forms/
+Siebel URL's Forms Cluster_145;http://10.1.3.145:7747/forms/
+Siebel URL's Forms Server1;http://10.1.3.144:7747/
+Siebel OHS Server2;http://10.1.3.145:7747
+Control de Cambios - SIPLA OHS DNS F5;http://prodsipla.bolnet.com.co/forms/
+Control de Cambios - SIPLA URL's Forms Server1;http://10.1.3.144:6032/forms/
+Control de Cambios - SIPLA URL's Forms Server2;http://10.1.3.145:6032/forms/
+Control de Cambios - SIPLA URL's Forms Cluster;http://10.1.3.144:7737/forms/
+Control de Cambios - SIPLA URL's Forms Cluster_145;http://10.1.3.145:7737/forms
+Control de Cambios - SIPLA URL's Forms DNS F5;http://prodsipla.bolnet.com.co/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
+Control de Cambios - SIPLA URL's Reports Server1;http://10.1.3.144:6034/reports/rwservlet?server=repsiplaprod1&report=test.rdf&destype=cache&desformat=pdf
+Control de Cambios - SIPLA URL's Reports Server2;http://10.1.3.145:6034/reports/rwservlet?server=repsiplaprod2&report=test.rdf&destype=cache&desformat=pdf
+Control de Cambios - SIPLA URL's Reports Cluster;http://10.1.3.144:7737/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
+Control de Cambios - SIPLA URL's Reports Cluster_145;http://10.1.3.145:7737/reports/rwservlet?server=cluster_reports_sipla&report=test.rdf&destype=cache&desformat=pdf
+Control de Cambios - SIPLA URL's Reports Server1;http://10.1.3.144:7737/
+Control de Cambios - SIPLA OHS Server2;http://10.1.3.145:7737/
+SAI OHS DNS F5;http://saiprod.bolnet.com.co/forms/
+SAI URL's Forms Server1;http://10.1.5.123:9001/forms/
+SAI URL's Forms Server2;http://10.1.5.117:9001/forms/
+SAI URL's Forms Cluster;http://10.1.5.123:7780/forms/
+SAI URL's Forms Cluster_117;http://10.1.5.117:7780/forms/
+SAI URL's Forms DNS F5;http://saiprod.bolnet.com.co/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SAI URL's Reports Server1;http://10.1.5.123:9002/reports/rwservlet?server=rep_tools_reports_sai&report=test.rdf&destype=cache&desformat=pdf
+SAI URL's Reports Server2;http://10.1.5.117:9002/reports/rwservlet?server=rep_tools_reports_sai2&report=test.rdf&destype=cache&desformat=pdf
+SAI URL's Reports Cluster;http://10.1.5.123:7779/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SAI URL's Reports Cluster_117;http://10.1.5.117:7779/reports/rwservlet?server=cluster_reports&report=test.rdf&destype=cache&desformat=pdf
+SAI OHS Server1;http://10.1.5.123:7780/
+SAI OHS Server2;http://10.1.5.117:7780/
