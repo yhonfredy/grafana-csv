@@ -4,53 +4,61 @@ from datetime import datetime
 
 # === CONFIGURACIÓN ===
 ARCHIVO_ENTRADA = 'estadoSaludBD.csv'
-ARCHIVO_SALIDA = f'Reporte_Salud_Generado_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
+ARCHIVO_SALIDA = f'Reporte_Salud_Real_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
 
 def probar_conexion_real(ip, service):
-    """ Intenta conectar para ver si la instancia responde (Nivel 2.5) """
+    # .strip() elimina espacios y saltos de línea invisibles (\r, \n)
+    ip = ip.strip()
+    service = service.strip()
+    
+    # Construimos la cadena de conexión
     dsn = f"{ip}:1521/{service}"
+    
     try:
-        # Intentamos con credenciales falsas
-        oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD", dsn=dsn, conn_timeout=5)
-        return "OPEN", "A", "Activa"
+        # Intentamos conectar (Modo Thin por defecto)
+        oracledb.connect(user="USER_CHECK", password="WRONG_PASSWORD", dsn=dsn, conn_timeout=10)
+        return "OPEN", "A", "Conexión Exitosa (Raro)"
     except oracledb.DatabaseError as e:
-        error_code = e.args[0].code
-        # ORA-01017 o ORA-01045 indican que la instancia está UP
-        if error_code in [1017, 1045]:
-            return "OPEN", "A", "Instancia Up (Confirmado)"
+        error_obj, = e.args
+        code = error_obj.code
+        # ORA-01017 o ORA-01045 significan que la BD está abierta y respondió
+        if code in [1017, 1045]:
+            return "OPEN", "A", "Instancia UP (Confirmado por ORA-01017)"
         else:
-            return "DOWN", "I", f"Error ORA-{error_code}"
-    except Exception:
-        return "DOWN", "I", "Fallo de Red/Timeout"
+            return "DOWN", "I", f"Error Oracle: ORA-{code}"
+    except Exception as e:
+        # Aquí capturamos errores de red o de formato
+        return "DOWN", "I", f"Error de Red/Sistema: {str(e)[:50]}"
 
 def ejecutar():
-    print(f"--- Iniciando Validación Automática ---")
+    print(f"--- Iniciando Escaneo de Salud ---")
     resultados = []
 
     try:
-        # IMPORTANTE: Se añade delimiter=';' para que coincida con tu archivo
+        # Usamos utf-8-sig para limpiar el archivo si viene de Excel
         with open(ARCHIVO_ENTRADA, mode='r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f, delimiter=';')
-            columnas = reader.fieldnames
+            columnas = list(reader.fieldnames)
             
-            # Si faltan las columnas de salida en el original, las agregamos al encabezado
-            nuevas_cols = ['STATUS', 'ESTADO', 'FECHA_REGISTRO', 'DISPONIBILIDAD']
-            for col in nuevas_cols:
+            # Aseguramos que existan las columnas de reporte
+            for col in ['STATUS', 'ESTADO', 'FECHA_REGISTRO', 'DISPONIBILIDAD']:
                 if col not in columnas:
                     columnas.append(col)
 
             for fila in reader:
-                ip = fila.get('DIRECCION_IP')
-                servicio = fila.get('BD_ID')
+                # Limpiamos los datos de entrada
+                ip = fila.get('DIRECCION_IP', '').strip()
+                id_bd = fila.get('BD_ID', '').strip()
                 
-                if not ip or not servicio:
+                if not ip or not id_bd:
                     continue
-                    
-                print(f"Validando: {servicio} en {ip}...")
                 
-                status, estado, detalle = probar_conexion_real(ip, servicio)
+                print(f"Verificando {id_bd} ({ip})...", end=" ", flush=True)
                 
-                # Llenamos los datos
+                status, estado, detalle = probar_conexion_real(ip, id_bd)
+                
+                print(f"[{status}]")
+                
                 fila['STATUS'] = status
                 fila['ESTADO'] = estado
                 fila['FECHA_REGISTRO'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -58,17 +66,16 @@ def ejecutar():
                 
                 resultados.append(fila)
 
-        # Guardamos el resultado (usando coma para que Excel lo abra fácil o punto y coma si prefieres)
+        # Guardamos el resultado final
         with open(ARCHIVO_SALIDA, mode='w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=columnas, delimiter=';')
             writer.writeheader()
             writer.writerows(resultados)
 
-        print(f"\n✅ PROCESO EXITOSO")
-        print(f"Se ha creado el archivo: {ARCHIVO_SALIDA}")
+        print(f"\n✅ REPORTE GENERADO: {ARCHIVO_SALIDA}")
 
     except Exception as e:
-        print(f"\n❌ ERROR: {str(e)}")
+        print(f"\n❌ ERROR CRÍTICO: {str(e)}")
 
 if __name__ == "__main__":
     ejecutar()
