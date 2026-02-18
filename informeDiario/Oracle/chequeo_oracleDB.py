@@ -7,21 +7,24 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # === CONFIGURACIÓN DE RUTAS ===
+# Ruta base del proyecto para asegurar que funcione en Cron
 BASE_DIR_PROYECTO = "/home/ssm-user/SETI/validarServicios"
 ARCHIVO_ENTRADA = 'estadoSaludBD.csv'  
 VARIABLES_FILE = f"{BASE_DIR_PROYECTO}/variables.txt"
 
+# Configuración de Logs: /logs/Oracle/YYYY-MM-DD
 FECHA_HOY = datetime.now().strftime("%Y-%m-%d")
 LOG_DIR = f"{BASE_DIR_PROYECTO}/logs/Oracle/{FECHA_HOY}"
 
+# Configuración InfluxDB
 INFLUX_BUCKET_NAME = "status_services"
 INFLUX_MEASUREMENT = "status_check_oracleDB"
 
 def probar_conexion_real(ip, service):
     """ Valida disponibilidad detectando respuestas del motor Oracle """
     dsn = f"{ip.strip()}:1521/{service.strip()}"
-    
-    # Listado robusto de errores conocidos
+
+    # Listado completo de errores conocidos
     ERRORES_MAP = {
         12170: "TIMEOUT (Posible Firewall bloqueando)",
         12543: "Error de red: Destino inalcanzable",
@@ -40,30 +43,31 @@ def probar_conexion_real(ip, service):
     }
 
     try:
-        # Intento de conexión con credenciales falsas para disparar la respuesta de la BD
+        # Intento de conexión con credenciales falsas
         oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD_123", dsn=dsn)
         return "up", "OK", "Instancia Up (Login Ok)"
-        
+
     except oracledb.DatabaseError as e:
         error_obj, = e.args
         code = error_obj.code
         
-        # Códigos ORA que confirman vida (Login, permisos, bloqueos)
+        # Códigos ORA que confirman que la BD respondió (está UP)
         if code in [1017, 1045, 28000, 28001]:
             return "up", "OK", ERRORES_MAP.get(code, f"Instancia Up (ORA-{code})")
-        
+
         detalle = ERRORES_MAP.get(code, f"ORA-{code}: {error_obj.message.strip()[:50]}")
         return "down", f"ORA-{code}", detalle
+
+    except Exception as e:
+        msg = str(e).upper()
         
-    except (oracledb.InterfaceError, Exception) as e:
-        msg = str(e)
-        
-        # EL PARCHE PARA SALU: Captura errores de verificado de password de versiones viejas
-        # Si el driver se queja de "verifier type", es porque la BD le respondió.
-        if "DPY-3015" in msg or "DPY-3010" in msg or "0x939" in msg:
+        # VALIDACIÓN DE VERIFICADOR (DPY-3015 / 0x939):
+        # Si el error menciona 'PASSWORD VERIFIER', 'DPY-3015' o el código hexadecimal,
+        # significa que hubo comunicación con el motor Oracle -> La BD está UP.
+        if any(x in msg for x in ["DPY-3015", "DPY-3010", "0X939", "PASSWORD VERIFIER"]):
             return "up", "OK", "Instancia Up (Login validado - Verifier compatibility)"
-        
-        # Para DPY-6005 (Refused) o fallos de red reales
+
+        # Para errores DPY-6005 (Refused) u otros fallos de red
         return "down", "NETWORK_ERROR", f"Error: {msg[:60]}"
 
 def subir_a_influx(datos):
@@ -71,7 +75,9 @@ def subir_a_influx(datos):
     try:
         from influxdb_client import InfluxDBClient, Point
         from influxdb_client.client.write_api import SYNCHRONOUS
-        if not os.path.exists(VARIABLES_FILE): return
+        
+        if not os.path.exists(VARIABLES_FILE):
+            return
         
         creds = {}
         with open(VARIABLES_FILE, "r") as vf:
@@ -121,8 +127,12 @@ def ejecutar():
             print(f"[{status.upper()}] - {detalle}")
             
             resultados.append({
-                "db_id": id_bd, "ip": ip, "status": status,
-                "tipo_error": tipo, "detalle": detalle, "timestamp": now.isoformat()
+                "db_id": id_bd, 
+                "ip": ip, 
+                "status": status,
+                "tipo_error": tipo, 
+                "detalle": detalle, 
+                "timestamp": now.isoformat()
             })
             
     archivo_log = f"{LOG_DIR}/scan_{now.strftime('%H%M%S')}.json"
