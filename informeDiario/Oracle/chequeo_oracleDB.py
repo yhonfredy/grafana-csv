@@ -11,9 +11,11 @@ BASE_DIR_PROYECTO = "/home/ssm-user/SETI/validarServicios"
 ARCHIVO_ENTRADA = 'estadoSaludBD.csv'
 VARIABLES_FILE = f"{BASE_DIR_PROYECTO}/variables.txt"
 
+# Configuración de Logs: /logs/Oracle/YYYY-MM-DD
 FECHA_HOY = datetime.now().strftime("%Y-%m-%d")
 LOG_DIR = f"{BASE_DIR_PROYECTO}/logs/Oracle/{FECHA_HOY}"
 
+# Configuración InfluxDB
 INFLUX_BUCKET_NAME = "status_services"
 INFLUX_MEASUREMENT = "status_check_oracleDB"
 
@@ -21,7 +23,7 @@ def probar_conexion_real(ip, service):
     """ Valida disponibilidad detectando respuestas del motor Oracle """
     dsn = f"{ip.strip()}:1521/{service.strip()}"
 
-    # Listado de errores conocidos ORA
+    # Diccionario de errores ORA conocidos
     ERRORES_MAP = {
         12170: "TIMEOUT (Posible Firewall bloqueando)",
         12543: "Error de red: Destino inalcanzable",
@@ -45,32 +47,37 @@ def probar_conexion_real(ip, service):
         return "up", "OK", "Instancia Up (Login Ok)"
 
     except Exception as e:
-        # Extraemos el mensaje y el código si existe
         msg = str(e).upper()
         code = 0
         
-        # Intentar extraer el código ORA si es un DatabaseError
+        # Extraer el código ORA si es un DatabaseError
         if hasattr(e, 'args') and len(e.args) > 0 and hasattr(e.args[0], 'code'):
             code = e.args[0].code
 
-        # --- LÓGICA DE DETECCIÓN DE INSTANCIA ALTA ---
-        
-        # 1. Si el código ORA es de los que confirman vida
+        # --- 1. DETECCIÓN DE INSTANCIA VIVA (UP) ---
+        # Si el código ORA confirma respuesta del motor
         if code in [1017, 1045, 28000, 28001]:
             return "up", "OK", ERRORES_MAP.get(code, f"Instancia Up (ORA-{code})")
-
-        # 2. El parche para SALU y errores DPY de compatibilidad
-        # Si el mensaje contiene rastros de negociación de password, la BD está viva
+        
+        # Si es un error de compatibilidad (SALU, SALUDARP)
         if any(x in msg for x in ["DPY-3015", "DPY-3010", "0X939", "VERIFIER", "AUTHENTICATION"]):
             return "up", "OK", "Instancia Up (Login validado - Verifier compatibility)"
 
-        # 3. Si el error es un ORA conocido pero de caída (ej. 12541)
-        if code in ERRORES_MAP:
-            return "down", f"ORA-{code}", ERRORES_MAP[code]
+        # --- 2. CATEGORIZACIÓN DE CAÍDAS (DOWN) ---
+        # Si es un error ORA conocido (code != 0)
+        if code != 0:
+            detalle = ERRORES_MAP.get(code, f"ORA-{code}: {msg[:50]}")
+            return "down", f"ORA-{code}", detalle
+        
+        # Errores específicos de la interfaz DPY (Red)
+        if "DPY-6005" in msg:
+            return "down", "DPY-6005", "Refused: Listener o Puerto cerrado"
+        
+        if "TIMEOUT" in msg or "DPY-6011" in msg:
+            return "down", "TIMEOUT", "Timeout: Posible Firewall"
 
-        # 4. Error genérico o desconocido
-        label_error = f"ORA-{code}" if code != 0 else "NETWORK_ERROR"
-        return "down", label_error, msg[:60]
+        # Fallo de red genérico
+        return "down", "NETWORK_ERROR", msg[:60]
 
 def subir_a_influx(datos):
     """ Envía los resultados a InfluxDB """
@@ -93,6 +100,7 @@ def subir_a_influx(datos):
             p = Point(INFLUX_MEASUREMENT)\
                 .tag("db_id", r["db_id"])\
                 .tag("ip", r["ip"])\
+                .tag("tipo_error", r["tipo_error"])\
                 .field("status_value", 1 if r["status"] == "up" else 0)\
                 .field("detalle", r["detalle"])\
                 .time(datetime.utcnow())
@@ -104,7 +112,7 @@ def subir_a_influx(datos):
 
 def ejecutar():
     if not os.path.exists(ARCHIVO_ENTRADA):
-        print(f"❌ Error: No existe el archivo {ARCHIVO_ENTRADA}")
+        print(f"❌ Error: No existe {ARCHIVO_ENTRADA}")
         return
 
     os.makedirs(LOG_DIR, exist_ok=True)
