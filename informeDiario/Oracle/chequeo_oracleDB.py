@@ -21,31 +21,26 @@ def probar_conexion_real(ip, service):
     """ Valida disponibilidad detectando respuestas del motor Oracle """
     dsn = f"{ip.strip()}:1521/{service.strip()}"
     
-    # DICCIONARIO COMPLETO DE ERRORES CONOCIDOS
+    # Listado robusto de errores conocidos
     ERRORES_MAP = {
-        # Red e Infraestructura
         12170: "TIMEOUT (Posible Firewall bloqueando)",
         12543: "Error de red: Destino inalcanzable",
         12541: "TNS: No hay listener (Puerto cerrado/Servicio apagado)",
-        
-        # Configuración de TNS
         12154: "TNS: No se pudo resolver el nombre (Check DSN)",
         12514: "TNS: Servicio/SID no encontrado en el listener",
         12505: "TNS: SID incorrecto o no registrado",
-        
-        # Estado de la Instancia (Motor Vivo)
         1017:  "Instancia Up (Login validado)",
         1045:  "Instancia Up (Falta permiso de sesión)",
         1033:  "Instancia en proceso de INICIO o APAGADO",
-        
-        # Recursos y Capacidad (Críticos)
         12516: "TNS: Límite de procesos excedido (DB Saturada)",
         12520: "TNS: Límite de sesiones excedido",
-        257:   "ERROR: Archive Log lleno (DB bloqueada)"
+        257:   "ERROR: Archive Log lleno (DB bloqueada)",
+        28000: "Instancia Up (Cuenta Bloqueada)",
+        28001: "Instancia Up (Password Expirado)"
     }
 
     try:
-        # Intento de conexión
+        # Intento de conexión con credenciales falsas para disparar la respuesta de la BD
         oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD_123", dsn=dsn)
         return "up", "OK", "Instancia Up (Login Ok)"
         
@@ -53,25 +48,26 @@ def probar_conexion_real(ip, service):
         error_obj, = e.args
         code = error_obj.code
         
-        # Si el código confirma que la BD está arriba
+        # Códigos ORA que confirman vida (Login, permisos, bloqueos)
         if code in [1017, 1045, 28000, 28001]:
             return "up", "OK", ERRORES_MAP.get(code, f"Instancia Up (ORA-{code})")
         
-        # Si es un error conocido de la lista completa
         detalle = ERRORES_MAP.get(code, f"ORA-{code}: {error_obj.message.strip()[:50]}")
         return "down", f"ORA-{code}", detalle
         
     except (oracledb.InterfaceError, Exception) as e:
         msg = str(e)
         
-        # Validación de verificado de password (DPY-3015/3010) -> ESTADO UP
-        if "DPY-3015" in msg or "DPY-3010" in msg:
+        # EL PARCHE PARA SALU: Captura errores de verificado de password de versiones viejas
+        # Si el driver se queja de "verifier type", es porque la BD le respondió.
+        if "DPY-3015" in msg or "DPY-3010" in msg or "0x939" in msg:
             return "up", "OK", "Instancia Up (Login validado - Verifier compatibility)"
         
-        # Errores de red de interfaz (DPY-6005, etc) -> ESTADO DOWN
-        return "down", "NETWORK_ERROR", msg[:60]
+        # Para DPY-6005 (Refused) o fallos de red reales
+        return "down", "NETWORK_ERROR", f"Error: {msg[:60]}"
 
 def subir_a_influx(datos):
+    """ Envía los resultados a InfluxDB """
     try:
         from influxdb_client import InfluxDBClient, Point
         from influxdb_client.client.write_api import SYNCHRONOUS
@@ -102,7 +98,7 @@ def subir_a_influx(datos):
 
 def ejecutar():
     if not os.path.exists(ARCHIVO_ENTRADA):
-        print(f"❌ Error: No existe {ARCHIVO_ENTRADA}")
+        print(f"❌ Error: No existe el archivo {ARCHIVO_ENTRADA}")
         return
         
     os.makedirs(LOG_DIR, exist_ok=True)
