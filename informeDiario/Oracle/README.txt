@@ -35,15 +35,12 @@ Diferenciación de Errores:
 
 Si el puerto está bloqueado por Firewall, el comando timeout cortará la ejecución y reportará FIREWALL_TIMEOUT.
 
-UPDATE, 
-El script que me compartiste **SÍ hace una solicitud real de usuario y contraseña**. No hace un simple telnet.
+UPDATE, chequeo_oracleDB.py:
+El script **SÍ hace una solicitud real de usuario y contraseña**. No hace un simple telnet.
 
-En tu código, la validación ocurre en esta parte:
+En el código, la validación ocurre en esta parte:
 
-```python
-oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD_123", dsn=dsn)
-
-```
+--> oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD_123", dsn=dsn)
 
 ### ¿Cómo funciona exactamente esa validación?
 
@@ -53,18 +50,14 @@ oracledb.connect(user="USER_MONITOR", password="WRONG_PASSWORD_123", dsn=dsn)
 4. **Respuesta del Motor:**
 * **Si la BD está ARRIBA:** El motor recibe los datos y, aunque la contraseña sea incorrecta, responde con un código de error específico (**ORA-01017: invalid username/password**).
 * **El truco:** Como el motor fue capaz de decirte que el password está mal, el script interpreta que **la base de datos está encendida y funcionando**.
-* **Si la BD está ABAJO:** No llegas al paso del password; el script recibe un error de red o de "Listener no disponible" y marca la base como **DOWN**.
-
-
+* **Si la BD está ABAJO:** No llegamos al paso del password; el script recibe un error de red o de "Listener no disponible" y marca la base como **DOWN**.
 
 ### Resumen de la diferencia:
 
-* **Telnet (Puerto 1521):** Solo te dice si la "puerta" está abierta. Pero la puerta puede estar abierta y la base de datos estar apagada o congelada.
-* **Tu Script (oracledb.connect):** Toca la puerta, entra y habla con el guardia. Si el guardia te responde (aunque sea para regañarte por el password), confirmas que **hay alguien vivo adentro**.
+* **Telnet (Puerto 1521):** Solo nos dice si la "puerta" está abierta. Pero la puerta puede estar abierta y la base de datos estar apagada o congelada.
+* **Mi Script (oracledb.connect):** Toca la puerta, entra y habla con el guardia. Si el guardia responde (aunque sea para regañarnos por el password), confirmamos que **hay alguien vivo adentro**.
 
-Por eso tu script anterior te marcaba `[OPEN]` en casos donde un simple ping no sería suficiente. Es mucho más confiable.
-
-¿Quieres que mantengamos esa lógica de "password incorrecto" en la versión que sube los datos a InfluxDB?
+Por eso en las veresiones iniciales(chequeoSalud.py) el script marcaba `[OPEN]` en casos donde un simple ping no sería suficiente. Es mucho más confiable.
 
 Si el Firewall está abierto pero el Listener está caído, Linux recibirá un paquete "RST" y el script reportará LISTENER_DOWN.
 
