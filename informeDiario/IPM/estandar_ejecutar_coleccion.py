@@ -58,7 +58,3 @@ def ejecutar_coleccion(archivo_json):
 if __name__ == "__main__":
     # AQUÍ ponemos el nombre del archivo que usaremos
     ejecutar_coleccion('estandar_peticiones_servicios.json')
-
-
-  
-    ejecutar_coleccion('peticiones_servicios.json')
