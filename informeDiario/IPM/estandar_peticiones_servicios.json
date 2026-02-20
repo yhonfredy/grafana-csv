@@ -12,10 +12,10 @@
     "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Header/><soapenv:Body><tem:IPMExport><tem:exportRequest><tan:XMLSystemFields>?</tan:XMLSystemFields></tem:exportRequest></tem:IPMExport></soapenv:Body></soapenv:Envelope>"
   },
   {
-    "operacion": "IPMUpdate",
-    "endpoint": "https://intranet.bolnet.com.co/IPMServiceSite/IPMService.svc/basic",
-    "soap_action": "http://tempuri.org/IIPMService/IPMUpdate",
-    "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Body><tem:IPMUpdate><tem:updateRequest><tan:Application>?</tan:Application><tan:Recid>?</tan:Recid><tan:XMLCriteria>?</tan:XMLCriteria></tem:updateRequest></tem:IPMUpdate></soapenv:Body></soapenv:Envelope>"
+  "operacion": "IPMUpdate",
+  "endpoint": "https://intranet.bolnet.com.co/IPMServiceSite/IPMService.svc/basic",
+  "soap_action": "http://tempuri.org/IIPMService/IPMUpdate",
+  "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Body><tem:IPMUpdate><tem:updateRequest><tan:Application>DOC1</tan:Application><tan:Recid>0</tan:Recid><tan:XMLCriteria><![CDATA[<?xml version=\"1.0\"?><IPMPARAMETERS><Parameters><Parameter><Name>CAMPO</Name><Value>VALOR</Value></Parameter></Parameters></IPMPARAMETERS>]]></tan:XMLCriteria></tem:updateRequest></tem:IPMUpdate></soapenv:Body></soapenv:Envelope>"
   },
   {
     "operacion": "consultarTercero",
