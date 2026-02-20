@@ -1,1 +1,26 @@
-
+[
+  {
+    "operacion": "IPMSearch",
+    "endpoint": "https://intranet.bolnet.com.co/IPMServiceSite/IPMService.svc/basic",
+    "soap_action": "http://tempuri.org/IIPMService/IPMSearch",
+    "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Body><tem:IPMSearch><tem:searchRequest><tan:Application>DOC1</tan:Application><tan:XMLCriteria><![CDATA[<?xml version=\"1.0\"?><IPMPARAMETERS><Parameters><Parameter><Name>POLIZAPRINCIPAL</Name><Value>2030101490801</Value></Parameter></Parameters></IPMPARAMETERS>]]]]><![CDATA[></tan:XMLCriteria></tem:searchRequest></tem:IPMSearch></soapenv:Body></soapenv:Envelope>"
+  },
+  {
+    "operacion": "IPMExport",
+    "endpoint": "https://intranet.bolnet.com.co/IPMServiceSite/IPMService.svc/basic",
+    "soap_action": "http://tempuri.org/IIPMService/IPMExport",
+    "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Header/><soapenv:Body><tem:IPMExport><tem:exportRequest><tan:XMLSystemFields>?</tan:XMLSystemFields></tem:exportRequest></tem:IPMExport></soapenv:Body></soapenv:Envelope>"
+  },
+  {
+    "operacion": "IPMUpdate",
+    "endpoint": "https://intranet.bolnet.com.co/IPMServiceSite/IPMService.svc/basic",
+    "soap_action": "http://tempuri.org/IIPMService/IPMUpdate",
+    "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tem=\"http://tempuri.org/\" xmlns:tan=\"http://schemas.datacontract.org/2004/07/Tandem.Bolivar.WCF.WSIPM\"><soapenv:Body><tem:IPMUpdate><tem:updateRequest><tan:Application>?</tan:Application><tan:Recid>?</tan:Recid><tan:XMLCriteria>?</tan:XMLCriteria></tem:updateRequest></tem:IPMUpdate></soapenv:Body></soapenv:Envelope>"
+  },
+  {
+    "operacion": "consultarTercero",
+    "endpoint": "https://ambientepruebas.segurosbolivar.com/NuevoTercerosWSWC/WSTerceroConsultableService",
+    "soap_action": "http://www.segurosbolivar.com/WSTerceroConsultableService/1.0/consultarTercero",
+    "payload": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:crea=\"http://www.segurosbolivar.com/terceros/dto/crea\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <crea:tercerosRequest>\n         <dataHeader>\n            <modulo>2</modulo>\n            <proceso>241</proceso>\n            <subProceso>240</subProceso>\n            <codCia>2</codCia>\n            <codSecc>34</codSecc>\n            <codProducto>88</codProducto>\n            <subProducto>0</subProducto>\n            <codigoUsuario>79468066</codigoUsuario>\n            <entidadColocadora>1</entidadColocadora>\n            <canal>3</canal>\n            <sistemaOrigen>1</sistemaOrigen>\n            <paisISO>CO</paisISO>\n            <pais>1</pais>\n            <sessionId>1</sessionId>\n            <direccionIp>127.0.0.1</direccionIp>\n            <versionServicio>1.0</versionServicio>\n         </dataHeader>\n         <data>\n            <tipoDocumento>CC</tipoDocumento>\n            <numeroDocumento>1</numeroDocumento>\n         </data>\n      </crea:tercerosRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+  }
+]
