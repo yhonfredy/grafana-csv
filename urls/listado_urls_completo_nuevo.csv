@@ -12,7 +12,7 @@ Prodias_frm - Terceros - URL's Reports - Cluster_88;https://ap28sbcc04:7767/repo
 Prodias_frm - Terceros - OHS - Server1;https://ap27sbcc04:7767
 Prodias_frm - Terceros - OHS - Server2;https://ap28sbcc04:7767
 Prodias_frm - Capi - URL's Forms - DNS F5;https://prodcapi.bolnet.com.co
-Prodias_frm - Capi - URL's Forms - Server1;https://ap27sbcc04:8022/forms
+Prodias_frm - Capi - URL's Forms - Server1;https://10.1.5.81:8022/forms
 Prodias_frm - Capi - URL's Forms - Server2;https://ap28sbcc04:8023/forms
 Prodias_frm - Capi - URL's Forms - Cluster;https://ap27sbcc04:7757/forms/
 Prodias_frm - Capi - URL's Forms - Cluster_88;https://ap28sbcc04:7757/forms/
