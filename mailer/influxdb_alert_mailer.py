@@ -15,12 +15,11 @@ import json
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 from influxdb_client import InfluxDBClient
 
-# ─────────────────────────────────────────────
-# CONFIGURACIÓN DE RUTAS Y ARCHIVOS
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+# 1. CONFIGURACIÓN Y CARGA DE VARIABLES (100% DINÁMICO)
+# ──────────────────────────────────────────────────────────
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 VARIABLES_FILE = os.path.join(BASE_DIR, "variables.txt")
 SCHEDULE_FILE  = os.path.join(BASE_DIR, "horarios.json")
@@ -31,7 +30,6 @@ def _load_creds() -> dict:
         if not os.path.exists(VARIABLES_FILE):
             print(f"❌ ERROR CRÍTICO: No se encuentra el archivo {VARIABLES_FILE}")
             return creds
-            
         with open(VARIABLES_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
@@ -42,28 +40,23 @@ def _load_creds() -> dict:
         print(f"❌ Error leyendo {VARIABLES_FILE}: {e}")
     return creds
 
-# CARGA ÚNICA DE VARIABLES DESDE EL TXT
 _CONFIG = _load_creds()
 
-# InfluxDB (Dependencia total del TXT)
 INFLUX_URL    = _CONFIG.get("INFLUX_URL")
 INFLUX_TOKEN  = _CONFIG.get("INFLUX_TOKEN")
 INFLUX_ORG    = _CONFIG.get("INFLUX_ORG")
 INFLUX_BUCKET = _CONFIG.get("INFLUX_BUCKET")
 
-# Correo (Dependencia total del TXT)
-GMAIL_USER = _CONFIG.get("GMAIL_USER")
-GMAIL_PASS = _CONFIG.get("GMAIL_PASS")
-EMAIL_TO   = _CONFIG.get("EMAIL_TO")
-EMAIL_CC   = _CONFIG.get("EMAIL_CC")
+GMAIL_USER    = _CONFIG.get("GMAIL_USER")
+GMAIL_PASS    = _CONFIG.get("GMAIL_PASS")
+EMAIL_TO      = _CONFIG.get("EMAIL_TO")
+EMAIL_CC      = _CONFIG.get("EMAIL_CC")
 
-# Comportamiento
 WINDOW_MINUTES = 15
-SEND_ALWAYS    = _CONFIG.get("SEND_ALWAYS", "true").lower() == "true"
 
-# ─────────────────────────────────────────────
-# LÓGICA DE TIEMPO (REDONDEO Y VENTANAS)
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+# 2. LÓGICA DE TIEMPO Y VENTANAS
+# ──────────────────────────────────────────────────────────
 def check_status_envio():
     ahora = datetime.now()
     minuto_bloque = (ahora.minute // 15) * 15
@@ -85,9 +78,9 @@ def get_window() -> tuple:
     start = now.replace(minute=floored, second=0, microsecond=0)
     return start, now
 
-# ─────────────────────────────────────────────
-# CONSULTAS INFLUXDB (QUERIES)
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+# 3. CONSULTAS INFLUXDB
+# ──────────────────────────────────────────────────────────
 ALL_QUERIES = {
     "listener": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "oracle" or r.tipo == "listado_oracle") |> filter(fn: (r) => r._value == 0)""",
     "weblogic_puertos": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "weblogic") |> filter(fn: (r) => r._value == 0)""",
@@ -123,9 +116,9 @@ def query_influx(start: datetime, stop: datetime) -> dict:
     client.close()
     return results
 
-# ─────────────────────────────────────────────
-# DISEÑO HTML (SECCIONES COMPLETAS)
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+# 4. DISEÑO HTML CON ESPACIADO Y TEXTO "ERROR(ES)"
+# ──────────────────────────────────────────────────────────
 SECTIONS = [
     {"icon": "💽", "title": "Infraestructura de Base de Datos Oracle", "sub": "Monitoreo de conexión – Estado en tiempo real", 
      "zones": [("listener", "💾", "Verificación de disponibilidad del Listener (Puerto 1521)"), ("db_prod", "📡", "Disponibilidad Global – Producción"), ("db_test", "📡", "Disponibilidad Global – TEST"), ("db_dev", "📡", "Disponibilidad Global – Desarrollo")]},
@@ -145,47 +138,78 @@ def _rows_to_html(rows: list) -> str:
     tr = "".join([f'<tr style="background:{"#fff" if i%2==0 else "#f9f9f9"};">' + "".join([f'<td style="padding:8px;border-bottom:1px solid #eee;font-size:11px;">{r.get(c,"—")}</td>' for c in actual_cols]) + '</tr>' for i,r in enumerate(rows)])
     return f'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead>{th}</thead><tbody>{tr}</tbody></table></div>'
 
-def build_email_html(data, window_label, total_errors):
+def build_email_html(data, window_label, total_errors, start_dt, stop_dt):
     sum_color = "#DC3545" if total_errors > 0 else "#28A745"
     sum_icon = "⚠️" if total_errors > 0 else "✅"
+    
+    # Rango de tiempo para el subtítulo de la franja de resumen
+    time_range = f"{start_dt.strftime('%H:%M')} - {stop_dt.strftime('%H:%M')}"
+    
     sections_html = ""
     for sec in SECTIONS:
         zones_html = ""
         for zid, zicon, zlabel in sec["zones"]:
             rows = data.get(zid, [])
             count = len(rows)
-            status_style = f"background:{'#DC3545' if count>0 else '#28A745'};color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;"
-            zones_html += f"""<div style="margin-bottom:15px;">
-                <div style="background:#009056;padding:8px 15px;display:flex;align-items:center;border-left:4px solid #FFE16F;">
+            # badge_color rojo si hay errores, verde si es 0
+            badge_color = "#DC3545" if count > 0 else "#28A745"
+            
+            # Espaciado entre bloques de zonas (margin-bottom: 25px)
+            zones_html += f"""
+            <div style="margin-bottom:25px;">
+                <div style="background:#009056;padding:12px 15px;display:flex;align-items:center;border-left:4px solid #FFE16F;">
                     <span style="color:#fff;font-size:12px;font-weight:700;flex:1;">{zicon} {zlabel}</span>
-                    <span style="{status_style}">{count if count>0 else "OK"}</span>
+                    <span style="background:{badge_color};color:#fff;border-radius:12px;padding:3px 12px;font-size:11px;font-weight:700;">
+                        {f"{count} error(es)" if count > 0 else "OK"}
+                    </span>
                 </div>
-                <div style="padding:10px;background:#fff;border:1px solid #eee;border-top:none;">{_rows_to_html(rows)}</div>
+                <div style="padding:15px;background:#fff;border:1px solid #eee;border-top:none;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                    {_rows_to_html(rows)}
+                </div>
             </div>"""
-        sections_html += f"""<div style="margin-top:25px;">
-            <div style="background:#038450;padding:15px;border-left:6px solid #FFE16F;">
+        
+        # Espaciado entre Secciones Principales (margin-top: 40px)
+        sections_html += f"""
+        <div style="margin-top:40px;">
+            <div style="background:#038450;padding:18px;border-left:6px solid #FFE16F;box-shadow:0 3px 6px rgba(0,0,0,0.1);">
                 <div style="color:#fff;font-size:15px;font-weight:700;text-transform:uppercase;">{sec['icon']} {sec['title']}</div>
-                <div style="color:rgba(255,255,255,0.8);font-size:11px;">{sec['sub']}</div>
-            </div>{zones_html}</div>"""
+                <div style="color:rgba(255,255,255,0.8);font-size:11px;margin-top:4px;">{sec['sub']}</div>
+            </div>
+            <div style="padding-top:20px;">{zones_html}</div>
+        </div>"""
 
-    return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
-    <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-        <div style="background:#038450;padding:25px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-left:8px solid #FFE16F;">
-            <div><div style="font-size:24px;font-weight:700;">🛡️ Centro de Operaciones</div><div style="font-size:13px;color:#FFE16F;font-weight:700;margin-top:5px;">Seguros Bolívar – Monitoreo Integral</div></div>
-            <div style="background:#fff;padding:10px;border-radius:10px;"><img src="https://d9b6rardqz97a.cloudfront.net/wp-content/uploads/2019/11/31104435/icon-bolivar-conmigo.png" width="80"></div>
+    return f"""
+    <!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
+    <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.1);">
+        <div style="background:#038450;padding:30px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-left:8px solid #FFE16F;">
+            <div>
+                <div style="font-size:24px;font-weight:700;">🛡️ Centro de Operaciones</div>
+                <div style="font-size:13px;color:#FFE16F;font-weight:700;margin-top:5px;">Seguros Bolívar – Monitoreo Integral</div>
+            </div>
+            <div style="background:#fff;padding:12px;border-radius:12px;"><img src="https://d9b6rardqz97a.cloudfront.net/wp-content/uploads/2019/11/31104435/icon-bolivar-conmigo.png" width="85"></div>
         </div>
-        <div style="padding:20px;">
-            <div style="background:{sum_color};color:#fff;padding:15px;font-weight:700;border-radius:5px;">{sum_icon} REPORTE: {total_errors} error(es) detectado(s) en el bloque {window_label}</div>
+        
+        <div style="padding:30px;">
+            <div style="background:{sum_color};color:#fff;padding:20px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                <div style="font-size:18px;font-weight:700;">{sum_icon} REPORTE: {total_errors} error(es) detectado(s)</div>
+                <div style="font-size:12px;margin-top:5px;opacity:0.9;">Bloque de monitoreo: {window_label} ({time_range})</div>
+            </div>
+            
             {sections_html}
         </div>
-        <div style="background:#f9f9f9;padding:15px;text-align:center;font-size:11px;color:#888;">Seguros Bolívar © 2024 - Sistema de Alertas Automáticas</div>
+        
+        <div style="background:#f9f9f9;padding:20px;text-align:center;font-size:11px;color:#888;border-top:1px solid #eee;">
+            Seguros Bolívar © 2026 - Sistema de Alertas Automáticas IPM
+        </div>
     </div></body></html>"""
 
-# ─────────────────────────────────────────────
-# ENVÍO Y EJECUCIÓN
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+# 5. ENVÍO Y EJECUCIÓN
+# ──────────────────────────────────────────────────────────
 def send_email(html, total_errors, label, incluir_cc=True):
+    # Subject corregido con "error(es)"
     subject = f"{'⚠️' if total_errors > 0 else '✅'} [{label}] Monitoreo Seguros Bolívar - {total_errors} error(es)"
+    
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = GMAIL_USER
@@ -197,7 +221,7 @@ def send_email(html, total_errors, label, incluir_cc=True):
         recipients += [e.strip() for e in EMAIL_CC.split(",") if e.strip()]
 
     if not recipients:
-        print("⚠️ No hay destinatarios definidos en variables.txt. Abortando envío.")
+        print("⚠️ No hay destinatarios. Abortando.")
         return
 
     msg.attach(MIMEText(html, "html"))
@@ -221,13 +245,14 @@ def main():
     data = query_influx(start, stop)
     total_errors = sum(len(v) for v in data.values())
 
+    # Generamos el HTML pasando los tiempos para el rango
+    html = build_email_html(data, label, total_errors, start, stop)
+
     if es_fija:
         print(f"📢 Reporte Programado JSON ({label}). Enviando a TO y CC...")
-        html = build_email_html(data, label, total_errors)
         send_email(html, total_errors, label, incluir_cc=True)
     elif es_alerta and total_errors > 0:
         print(f"🚨 ALERTA detectada ({total_errors} errores). Enviando solo a TO...")
-        html = build_email_html(data, label, total_errors)
         send_email(html, total_errors, label, incluir_cc=False)
     else:
         print(f"✅ Bloque {label}: Todo OK. No se requiere envío de alerta.")
