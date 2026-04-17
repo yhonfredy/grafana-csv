@@ -5,6 +5,7 @@
 #para que visualmente se identifique dónde está el problema rápidamente.
 #En el Asunto del correo (Subject): También aparecerá corregido:
 #⚠️ [06:03] Monitoreo Seguros Bolívar - 6 error(es)
+#⚠️ nueva lógica de destinatarios diferenciados (CC solo en reportes fijos, alertas directas solo al destinatario principal)
 
 import os
 import smtplib
@@ -38,90 +39,90 @@ def _load_creds() -> dict:
 
 _CREDS = _load_creds()
 
+# InfluxDB
 INFLUX_URL    = _CREDS.get("INFLUX_URL", "http://localhost:8086")
 INFLUX_TOKEN  = _CREDS.get("INFLUX_TOKEN", "")
 INFLUX_ORG    = _CREDS.get("INFLUX_ORG", "")
 INFLUX_BUCKET = _CREDS.get("INFLUX_BUCKET", "status_services")
 
+# Correo
 GMAIL_USER = _CREDS.get("GMAIL_USER", "")
 GMAIL_PASS = _CREDS.get("GMAIL_PASS", "")
-EMAIL_TO   = _CREDS.get("EMAIL_TO", "")
-EMAIL_CC   = _CREDS.get("EMAIL_CC", "")
+EMAIL_TO   = _CREDS.get("EMAIL_TO", "seti.segurosbolivar@gmail.com")
+EMAIL_CC   = _CREDS.get("EMAIL_CC", "dba@segurosbolivar.com,segurosbolivar@seti.com.co,yhonkys@gmail.com")
 
+# Parámetros
 WINDOW_MINUTES = 15
-SEND_ALWAYS    = _CREDS.get("SEND_ALWAYS", "false").lower() == "true"
-RUN_AS_DAEMON  = _CREDS.get("RUN_AS_DAEMON", "false").lower() == "true"
+SEND_ALWAYS    = _CREDS.get("SEND_ALWAYS", "true").lower() == "true"
 
 # ─────────────────────────────────────────────
-# VALIDACIÓN DE HORARIO CON REDONDEO
+# LÓGICA DE TIEMPO Y VENTANAS
 # ─────────────────────────────────────────────
-def es_hora_de_ejecutar() -> bool:
-    try:
-        if not os.path.exists(SCHEDULE_FILE):
-            return True
+def check_status_envio():
+    """Retorna (es_fija, es_alerta) basado en el bloque de 15 min."""
+    ahora = datetime.now()
+    # Redondeo para compensar el retraso del script de monitoreo
+    minuto_bloque = (ahora.minute // 15) * 15
+    bloque_horario = ahora.replace(minute=minuto_bloque).strftime("%H:%M")
+    
+    es_fija = False
+    if os.path.exists(SCHEDULE_FILE):
         with open(SCHEDULE_FILE, 'r', encoding="utf-8") as f:
             config = json.load(f)
-            horas_permitidas = config.get("horas_permitidas", [])
-        
-        ahora = datetime.now()
-        minuto_bloque = (ahora.minute // 15) * 15
-        bloque_horario = ahora.replace(minute=minuto_bloque).strftime("%H:%M")
-        
-        print(f"🕒 Hora Actual: {ahora.strftime('%H:%M')} | Validando Bloque: {bloque_horario}")
-        return bloque_horario in horas_permitidas
-    except Exception as e:
-        print(f"❌ Error horarios.json: {e}")
-        return False
+            if bloque_horario in config.get("horas_permitidas", []):
+                es_fija = True
 
-# ─────────────────────────────────────────────
-# LÓGICA DE TIEMPO E INFLUXDB
-# ─────────────────────────────────────────────
+    # Ventana de alertas: 6:00 AM a 10:00 PM
+    es_alerta = 6 <= ahora.hour < 22
+    
+    return es_fija, es_alerta, bloque_horario
+
 def get_window() -> tuple:
     now = datetime.now(timezone.utc)
     floored = (now.minute // WINDOW_MINUTES) * WINDOW_MINUTES
     start = now.replace(minute=floored, second=0, microsecond=0)
     return start, now
 
-def flux_range(start: datetime, stop: datetime) -> str:
-    fmt = "%Y-%m-%dT%H:%M:%SZ"
-    return f"|> range(start: {start.strftime(fmt)}, stop: {stop.strftime(fmt)})"
-
+# ─────────────────────────────────────────────
+# CONSULTAS INFLUXDB
+# ─────────────────────────────────────────────
 ALL_QUERIES = {
-    "listener": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "oracle" or r.tipo == "listado_oracle") |> filter(fn: (r) => r._value == 0)""",
-    "weblogic_puertos": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "weblogic") |> filter(fn: (r) => r._value == 0)""",
-    "ipm_puertos": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "ipm") |> filter(fn: (r) => r._value == 0)""",
-    "simon_puertos": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "simonweb" or r.tipo == "quotation") |> filter(fn: (r) => r._value == 0)""",
-    "simon_web_url": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check_http") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r._value == 0)""",
-    "db_prod": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "PRODUCCION" or r.ambiente == "PRD") |> filter(fn: (r) => r._value == 0)""",
-    "db_test": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "TEST" or r.ambiente == "QA") |> filter(fn: (r) => r._value == 0)""",
-    "db_dev": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "DESARROLLO" or r.ambiente == "DEV") |> filter(fn: (r) => r._value == 0)""",
-    "ipm_soap": """from(bucket: "{bucket}") {range} |> filter(fn: (r) => r._measurement == "status_check_IPM") |> filter(fn: (r) => r._field == "status_code") |> filter(fn: (r) => r._value != 200)""",
+    "listener": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "oracle" or r.tipo == "listado_oracle") |> filter(fn: (r) => r._value == 0)""",
+    "weblogic_puertos": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "weblogic") |> filter(fn: (r) => r._value == 0)""",
+    "ipm_puertos": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "ipm") |> filter(fn: (r) => r._value == 0)""",
+    "simon_puertos": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "simonweb" or r.tipo == "quotation") |> filter(fn: (r) => r._value == 0)""",
+    "simon_web_url": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check_http") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r._value == 0)""",
+    "db_prod": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "PRODUCCION" or r.ambiente == "PRD") |> filter(fn: (r) => r._value == 0)""",
+    "db_test": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "TEST" or r.ambiente == "QA") |> filter(fn: (r) => r._value == 0)""",
+    "db_dev": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check_oracleDataBase") |> filter(fn: (r) => r._field == "status_value") |> filter(fn: (r) => r.ambiente == "DESARROLLO" or r.ambiente == "DEV") |> filter(fn: (r) => r._value == 0)""",
+    "ipm_soap": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check_IPM") |> filter(fn: (r) => r._field == "status_code") |> filter(fn: (r) => r._value != 200)""",
 }
 
-def query_influx(window_start: datetime, window_stop: datetime) -> dict:
-    rng = flux_range(window_start, window_stop)
+def query_influx(start: datetime, stop: datetime) -> dict:
+    fmt = "%Y-%m-%dT%H:%M:%SZ"
+    s_str, p_str = start.strftime(fmt), stop.strftime(fmt)
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
     api = client.query_api()
     results = {}
     for zone, flux in ALL_QUERIES.items():
-        filled = flux.replace("{bucket}", INFLUX_BUCKET).replace("{range}", rng)
+        query = flux.replace("{bucket}", INFLUX_BUCKET).replace("{start}", s_str).replace("{stop}", p_str)
         try:
-            tables = api.query(filled)
+            tables = api.query(query)
             rows = []
-            for table in tables:
-                for rec in table.records:
-                    row = {"time": rec.get_time().strftime("%Y-%m-%d %H:%M:%S UTC") if rec.get_time() else "—", "value": rec.get_value()}
-                    skip = {"_start","_stop","_time","_value","_field","_measurement","result","table"}
+            for t in tables:
+                for rec in t.records:
+                    row = {"time": rec.get_time().strftime("%H:%M:%S"), "value": rec.get_value()}
                     for k, v in rec.values.items():
-                        if k not in skip and v is not None: row[k] = str(v)
+                        if k not in ["_start","_stop","_time","_value","_field","_measurement","result","table"] and v:
+                            row[k] = str(v)
                     rows.append(row)
             results[zone] = rows
-        except Exception as exc: results[zone] = [{"error": str(exc)}]
+        except: results[zone] = []
     client.close()
     return results
 
 # ─────────────────────────────────────────────
-# SECCIONES DETALLADAS Y HTML
+# DISEÑO HTML Y SECCIONES
 # ─────────────────────────────────────────────
 SECTIONS = [
     {"icon": "💽", "title": "Infraestructura de Base de Datos Oracle", "sub": "Monitoreo de conexión – Estado en tiempo real", 
@@ -136,81 +137,100 @@ SECTIONS = [
 
 def _rows_to_html(rows: list) -> str:
     if not rows: return '<p style="color:#28A745;font-weight:700;margin:8px 0;">✅ Sin errores en esta ventana</p>'
-    priority = ["time", "nombre", "db_id", "servicio", "ip", "url", "ambiente", "instance", "tipo", "value"]
-    all_keys = list(dict.fromkeys([k for k in priority if any(k in r for r in rows)] + [k for r in rows for k in r if k not in priority]))
-    th = "".join(f'<th style="background:#038450;color:#fff;padding:7px 10px;text-align:left;font-size:11px;">{k.upper()}</th>' for k in all_keys)
-    body = "".join([f'<tr style="background:{"#fff" if i%2==0 else "#F5F5F5"};">' + "".join([f'<td style="padding:6px 10px;border-bottom:1px solid #E1E1E1;font-size:11px;">{r.get(k,"—")}</td>' for k in all_keys]) + '</tr>' for i, r in enumerate(rows)])
-    return f'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr>{th}</tr></thead><tbody>{body}</tbody></table></div>'
+    cols = ["time", "nombre", "db_id", "servicio", "ip", "url", "ambiente", "instance", "tipo", "value"]
+    actual_cols = [c for c in cols if any(c in r for r in rows)]
+    th = "".join(f'<th style="background:#038450;color:#fff;padding:8px;text-align:left;font-size:11px;">{c.upper()}</th>' for c in actual_cols)
+    tr = "".join([f'<tr style="background:{"#fff" if i%2==0 else "#f9f9f9"};">' + "".join([f'<td style="padding:8px;border-bottom:1px solid #eee;font-size:11px;">{r.get(c,"—")}</td>' for c in actual_cols]) + '</tr>' for i,r in enumerate(rows)])
+    return f'<table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead>{th}</thead><tbody>{tr}</tbody></table>'
 
-def build_email_html(data: dict, window_start: datetime, window_stop: datetime) -> str:
-    ts_label = window_stop.strftime("%Y-%m-%d %H:%M UTC")
-    total_errors = sum(len(v) for v in data.values())
+def build_email_html(data, window_label, total_errors):
     sum_color = "#DC3545" if total_errors > 0 else "#28A745"
     sum_icon = "⚠️" if total_errors > 0 else "✅"
     
     sections_html = ""
     for sec in SECTIONS:
         zones_html = ""
-        for zone_id, z_icon, z_label in sec["zones"]:
-            rows = data.get(zone_id, []); count = len(rows)
-            dot_color = "#DC3545" if count > 0 else "#28A745"
-            zones_html += f'<div style="margin:10px 0 0;"><div style="background:#009056;border-left:4px solid #FFE16F;padding:8px 16px;display:flex;align-items:center;"><span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;flex:1;">{z_icon} {z_label}</span><span style="background:{dot_color};color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;">{count if count > 0 else "OK"}</span></div><div style="padding:12px 16px;background:#fff;border-left:4px solid #E1E1E1;">{_rows_to_html(rows)}</div></div>'
-        sections_html += f'<div style="margin-top:20px;"><div style="background:#038450;border-left:6px solid #FFE16F;padding:14px 20px;"><div style="font-size:14px;font-weight:700;color:#fff;text-transform:uppercase;">{sec["icon"]} {sec["title"]}</div><div style="font-size:11px;color:rgba(255,255,255,.8);">{sec["sub"]}</div></div>{zones_html}</div>'
+        for zid, zicon, zlabel in sec["zones"]:
+            rows = data.get(zid, [])
+            count = len(rows)
+            status_style = f"background:{'#DC3545' if count>0 else '#28A745'};color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;"
+            zones_html += f"""<div style="margin-bottom:15px;">
+                <div style="background:#009056;padding:8px 15px;display:flex;align-items:center;border-left:4px solid #FFE16F;">
+                    <span style="color:#fff;font-size:12px;font-weight:700;flex:1;">{zicon} {zlabel}</span>
+                    <span style="{status_style}">{count if count>0 else "OK"}</span>
+                </div>
+                <div style="padding:10px;background:#fff;border:1px solid #eee;border-top:none;">{_rows_to_html(rows)}</div>
+            </div>"""
+        
+        sections_html += f"""<div style="margin-top:25px;">
+            <div style="background:#038450;padding:15px;border-left:6px solid #FFE16F;">
+                <div style="color:#fff;font-size:15px;font-weight:700;text-transform:uppercase;">{sec['icon']} {sec['title']}</div>
+                <div style="color:rgba(255,255,255,0.8);font-size:11px;">{sec['sub']}</div>
+            </div>
+            {zones_html}
+        </div>"""
 
-    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#FAFAFA;font-family:Arial,sans-serif;"><div style="max-width:940px;margin:0 auto;padding:20px;">
-    <div style="background:#038450;border-left:6px solid #FFE16F;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:22px;font-weight:700;color:#fff;text-transform:uppercase;">🛡️ Centro de Operaciones</div>
-        <p style="font-size:12px;font-weight:700;color:#FFE16F;margin:4px 0;">Seguros Bolívar – Monitoreo en Tiempo Real</p>
-        <p style="font-size:11px;color:rgba(255,255,255,.8);margin:0;">Actualizado: {ts_label}</p>
-      </div>
-      <div style="text-align:center; width:15%;">
-        <div style="background:white; padding:15px; border-radius:12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
-          <img src="https://d9b6rardqz97a.cloudfront.net/wp-content/uploads/2019/11/31104435/icon-bolivar-conmigo.png" alt="Logo" style="width:85px; height:auto;">
+    return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
+    <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div style="background:#038450;padding:25px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-left:8px solid #FFE16F;">
+            <div>
+                <div style="font-size:24px;font-weight:700;">🛡️ Centro de Operaciones</div>
+                <div style="font-size:13px;color:#FFE16F;font-weight:700;margin-top:5px;">Seguros Bolívar – Monitoreo Integral</div>
+            </div>
+            <div style="background:#fff;padding:10px;border-radius:10px;"><img src="https://d9b6rardqz97a.cloudfront.net/wp-content/uploads/2019/11/31104435/icon-bolivar-conmigo.png" width="80"></div>
         </div>
-      </div>
-    </div>
-    <div style="background:#fff;padding:15px 24px;margin-top:12px;border-left:4px solid {sum_color};font-weight:700;color:{sum_color};">
-        {sum_icon} REPORTE: {total_errors} error(es) detectado(s) en el bloque {window_start.strftime('%H:%M')}
-    </div>
-    {sections_html}
-    <div style="margin-top:28px;padding:12px;background:#038450;text-align:center;color:#fff;font-size:11px;">Seguros Bolívar · Centro de Operaciones</div>
+        <div style="padding:20px;">
+            <div style="background:{sum_color};color:#fff;padding:15px;font-weight:700;border-radius:5px;">
+                {sum_icon} REPORTE: {total_errors} error(es) detectado(s) en el bloque {window_label}
+            </div>
+            {sections_html}
+        </div>
+        <div style="background:#f9f9f9;padding:15px;text-align:center;font-size:11px;color:#888;">Seguros Bolívar © 2024 - Sistema de Alertas Automáticas</div>
     </div></body></html>"""
 
 # ─────────────────────────────────────────────
-# ENVÍO Y MOTOR
+# ENVÍO Y EJECUCIÓN
 # ─────────────────────────────────────────────
-def send_email(html_body, total_errors, window_start, window_stop):
-    # Aquí también agregamos "error(es)" al asunto del correo
-    subject = f"{'⚠️' if total_errors > 0 else '✅'} [{window_stop.strftime('%H:%M')}] Monitoreo Seguros Bolívar - {total_errors} error(es)"
-    msg = MIMEMultipart("alternative"); msg["Subject"] = subject; msg["From"] = GMAIL_USER; msg["To"] = EMAIL_TO
-    if EMAIL_CC: msg["Cc"] = EMAIL_CC
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-    recipients = [EMAIL_TO] + ([e.strip() for e in EMAIL_CC.split(",") if e.strip()] if EMAIL_CC else [])
+def send_email(html, total_errors, label, incluir_cc=True):
+    subject = f"{'⚠️' if total_errors > 0 else '✅'} [{label}] Monitoreo Seguros Bolívar - {total_errors} error(es)"
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = GMAIL_USER
+    msg["To"] = EMAIL_TO
+    
+    recipients = [EMAIL_TO]
+    if incluir_cc and EMAIL_CC:
+        msg["Cc"] = EMAIL_CC
+        recipients += [e.strip() for e in EMAIL_CC.split(",") if e.strip()]
+
+    msg.attach(MIMEText(html, "html"))
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as srv:
-        srv.login(GMAIL_USER, GMAIL_PASS); srv.sendmail(GMAIL_USER, recipients, msg.as_string())
-    print(f"✅ Correo enviado a {recipients}")
-
-def run_cycle():
-    window_start, window_stop = get_window()
-    data = query_influx(window_start, window_stop)
-    total_errors = sum(len(v) for v in data.values())
-    if total_errors > 0 or SEND_ALWAYS:
-        html = build_email_html(data, window_start, window_stop)
-        send_email(html, total_errors, window_start, window_stop)
-    else: print("→ Sin errores. No se envía mail.")
+        srv.login(GMAIL_USER, GMAIL_PASS)
+        srv.sendmail(GMAIL_USER, recipients, msg.as_string())
+    print(f"✅ Enviado a: {', '.join(recipients)}")
 
 def main():
-    if RUN_AS_DAEMON:
-        while True:
-            if es_hora_de_ejecutar(): run_cycle()
-            time.sleep(60)
+    es_fija, es_alerta, label = check_status_envio()
+    
+    if not es_fija and not es_alerta:
+        print(f"💤 Fuera de horario ({label}).")
+        return
+
+    start, stop = get_window()
+    data = query_influx(start, stop)
+    total_errors = sum(len(v) for v in data.values())
+
+    if es_fija:
+        print(f"📢 Reporte Programado JSON ({label}). Enviando a TO y CC...")
+        html = build_email_html(data, label, total_errors)
+        send_email(html, total_errors, label, incluir_cc=True)
+    elif es_alerta and total_errors > 0:
+        print(f"🚨 ALERTA detectada ({total_errors} errores). Enviando solo a TO...")
+        html = build_email_html(data, label, total_errors)
+        send_email(html, total_errors, label, incluir_cc=False)
     else:
-        if es_hora_de_ejecutar():
-            run_cycle()
-        else:
-            print(f"💤 Bloque ({datetime.now().strftime('%H:%M')}) no programado en JSON. Saltando.")
+        print(f"✅ Bloque {label}: Todo OK. No se requiere envío de alerta.")
 
 if __name__ == "__main__":
     main()
