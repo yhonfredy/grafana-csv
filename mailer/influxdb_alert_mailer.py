@@ -28,40 +28,44 @@ SCHEDULE_FILE  = os.path.join(BASE_DIR, "horarios.json")
 def _load_creds() -> dict:
     creds = {}
     try:
+        if not os.path.exists(VARIABLES_FILE):
+            print(f"❌ ERROR CRÍTICO: No se encuentra el archivo {VARIABLES_FILE}")
+            return creds
+            
         with open(VARIABLES_FILE, "r", encoding="utf-8") as f:
             for line in f:
-                if "=" in line:
-                    k, v = line.strip().split("=", 1)
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
                     creds[k.strip()] = v.strip()
-    except FileNotFoundError:
-        print(f"⚠️  {VARIABLES_FILE} no encontrado.")
+    except Exception as e:
+        print(f"❌ Error leyendo {VARIABLES_FILE}: {e}")
     return creds
 
-_CREDS = _load_creds()
+# CARGA ÚNICA DE VARIABLES DESDE EL TXT
+_CONFIG = _load_creds()
 
-# InfluxDB
-INFLUX_URL    = _CREDS.get("INFLUX_URL", "http://localhost:8086")
-INFLUX_TOKEN  = _CREDS.get("INFLUX_TOKEN", "")
-INFLUX_ORG    = _CREDS.get("INFLUX_ORG", "")
-INFLUX_BUCKET = _CREDS.get("INFLUX_BUCKET", "status_services")
+# InfluxDB (Dependencia total del TXT)
+INFLUX_URL    = _CONFIG.get("INFLUX_URL")
+INFLUX_TOKEN  = _CONFIG.get("INFLUX_TOKEN")
+INFLUX_ORG    = _CONFIG.get("INFLUX_ORG")
+INFLUX_BUCKET = _CONFIG.get("INFLUX_BUCKET")
 
-# Correo
-GMAIL_USER = _CREDS.get("GMAIL_USER", "")
-GMAIL_PASS = _CREDS.get("GMAIL_PASS", "")
-EMAIL_TO   = _CREDS.get("EMAIL_TO", "seti.segurosbolivar@gmail.com")
-EMAIL_CC   = _CREDS.get("EMAIL_CC", "dba@segurosbolivar.com,segurosbolivar@seti.com.co,yhonkys@gmail.com")
+# Correo (Dependencia total del TXT)
+GMAIL_USER = _CONFIG.get("GMAIL_USER")
+GMAIL_PASS = _CONFIG.get("GMAIL_PASS")
+EMAIL_TO   = _CONFIG.get("EMAIL_TO")
+EMAIL_CC   = _CONFIG.get("EMAIL_CC")
 
-# Parámetros
+# Comportamiento
 WINDOW_MINUTES = 15
-SEND_ALWAYS    = _CREDS.get("SEND_ALWAYS", "true").lower() == "true"
+SEND_ALWAYS    = _CONFIG.get("SEND_ALWAYS", "true").lower() == "true"
 
 # ─────────────────────────────────────────────
-# LÓGICA DE TIEMPO Y VENTANAS
+# LÓGICA DE TIEMPO (REDONDEO Y VENTANAS)
 # ─────────────────────────────────────────────
 def check_status_envio():
-    """Retorna (es_fija, es_alerta) basado en el bloque de 15 min."""
     ahora = datetime.now()
-    # Redondeo para compensar el retraso del script de monitoreo
     minuto_bloque = (ahora.minute // 15) * 15
     bloque_horario = ahora.replace(minute=minuto_bloque).strftime("%H:%M")
     
@@ -72,9 +76,7 @@ def check_status_envio():
             if bloque_horario in config.get("horas_permitidas", []):
                 es_fija = True
 
-    # Ventana de alertas: 6:00 AM a 10:00 PM
     es_alerta = 6 <= ahora.hour < 22
-    
     return es_fija, es_alerta, bloque_horario
 
 def get_window() -> tuple:
@@ -84,7 +86,7 @@ def get_window() -> tuple:
     return start, now
 
 # ─────────────────────────────────────────────
-# CONSULTAS INFLUXDB
+# CONSULTAS INFLUXDB (QUERIES)
 # ─────────────────────────────────────────────
 ALL_QUERIES = {
     "listener": """from(bucket: "{bucket}") |> range(start: {start}, stop: {stop}) |> filter(fn: (r) => r._measurement == "status_check") |> filter(fn: (r) => r._field == "status") |> filter(fn: (r) => r.tipo == "oracle" or r.tipo == "listado_oracle") |> filter(fn: (r) => r._value == 0)""",
@@ -105,7 +107,7 @@ def query_influx(start: datetime, stop: datetime) -> dict:
     api = client.query_api()
     results = {}
     for zone, flux in ALL_QUERIES.items():
-        query = flux.replace("{bucket}", INFLUX_BUCKET).replace("{start}", s_str).replace("{stop}", p_str)
+        query = flux.replace("{bucket}", str(INFLUX_BUCKET)).replace("{start}", s_str).replace("{stop}", p_str)
         try:
             tables = api.query(query)
             rows = []
@@ -122,7 +124,7 @@ def query_influx(start: datetime, stop: datetime) -> dict:
     return results
 
 # ─────────────────────────────────────────────
-# DISEÑO HTML Y SECCIONES
+# DISEÑO HTML (SECCIONES COMPLETAS)
 # ─────────────────────────────────────────────
 SECTIONS = [
     {"icon": "💽", "title": "Infraestructura de Base de Datos Oracle", "sub": "Monitoreo de conexión – Estado en tiempo real", 
@@ -141,12 +143,11 @@ def _rows_to_html(rows: list) -> str:
     actual_cols = [c for c in cols if any(c in r for r in rows)]
     th = "".join(f'<th style="background:#038450;color:#fff;padding:8px;text-align:left;font-size:11px;">{c.upper()}</th>' for c in actual_cols)
     tr = "".join([f'<tr style="background:{"#fff" if i%2==0 else "#f9f9f9"};">' + "".join([f'<td style="padding:8px;border-bottom:1px solid #eee;font-size:11px;">{r.get(c,"—")}</td>' for c in actual_cols]) + '</tr>' for i,r in enumerate(rows)])
-    return f'<table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead>{th}</thead><tbody>{tr}</tbody></table>'
+    return f'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead>{th}</thead><tbody>{tr}</tbody></table></div>'
 
 def build_email_html(data, window_label, total_errors):
     sum_color = "#DC3545" if total_errors > 0 else "#28A745"
     sum_icon = "⚠️" if total_errors > 0 else "✅"
-    
     sections_html = ""
     for sec in SECTIONS:
         zones_html = ""
@@ -161,28 +162,20 @@ def build_email_html(data, window_label, total_errors):
                 </div>
                 <div style="padding:10px;background:#fff;border:1px solid #eee;border-top:none;">{_rows_to_html(rows)}</div>
             </div>"""
-        
         sections_html += f"""<div style="margin-top:25px;">
             <div style="background:#038450;padding:15px;border-left:6px solid #FFE16F;">
                 <div style="color:#fff;font-size:15px;font-weight:700;text-transform:uppercase;">{sec['icon']} {sec['title']}</div>
                 <div style="color:rgba(255,255,255,0.8);font-size:11px;">{sec['sub']}</div>
-            </div>
-            {zones_html}
-        </div>"""
+            </div>{zones_html}</div>"""
 
     return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
     <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         <div style="background:#038450;padding:25px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-left:8px solid #FFE16F;">
-            <div>
-                <div style="font-size:24px;font-weight:700;">🛡️ Centro de Operaciones</div>
-                <div style="font-size:13px;color:#FFE16F;font-weight:700;margin-top:5px;">Seguros Bolívar – Monitoreo Integral</div>
-            </div>
+            <div><div style="font-size:24px;font-weight:700;">🛡️ Centro de Operaciones</div><div style="font-size:13px;color:#FFE16F;font-weight:700;margin-top:5px;">Seguros Bolívar – Monitoreo Integral</div></div>
             <div style="background:#fff;padding:10px;border-radius:10px;"><img src="https://d9b6rardqz97a.cloudfront.net/wp-content/uploads/2019/11/31104435/icon-bolivar-conmigo.png" width="80"></div>
         </div>
         <div style="padding:20px;">
-            <div style="background:{sum_color};color:#fff;padding:15px;font-weight:700;border-radius:5px;">
-                {sum_icon} REPORTE: {total_errors} error(es) detectado(s) en el bloque {window_label}
-            </div>
+            <div style="background:{sum_color};color:#fff;padding:15px;font-weight:700;border-radius:5px;">{sum_icon} REPORTE: {total_errors} error(es) detectado(s) en el bloque {window_label}</div>
             {sections_html}
         </div>
         <div style="background:#f9f9f9;padding:15px;text-align:center;font-size:11px;color:#888;">Seguros Bolívar © 2024 - Sistema de Alertas Automáticas</div>
@@ -198,17 +191,24 @@ def send_email(html, total_errors, label, incluir_cc=True):
     msg["From"] = GMAIL_USER
     msg["To"] = EMAIL_TO
     
-    recipients = [EMAIL_TO]
+    recipients = [EMAIL_TO] if EMAIL_TO else []
     if incluir_cc and EMAIL_CC:
         msg["Cc"] = EMAIL_CC
         recipients += [e.strip() for e in EMAIL_CC.split(",") if e.strip()]
 
+    if not recipients:
+        print("⚠️ No hay destinatarios definidos en variables.txt. Abortando envío.")
+        return
+
     msg.attach(MIMEText(html, "html"))
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as srv:
-        srv.login(GMAIL_USER, GMAIL_PASS)
-        srv.sendmail(GMAIL_USER, recipients, msg.as_string())
-    print(f"✅ Enviado a: {', '.join(recipients)}")
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as srv:
+            srv.login(GMAIL_USER, GMAIL_PASS)
+            srv.sendmail(GMAIL_USER, recipients, msg.as_string())
+        print(f"✅ Enviado a: {', '.join(recipients)}")
+    except Exception as e:
+        print(f"❌ Error SMTP: {e}")
 
 def main():
     es_fija, es_alerta, label = check_status_envio()
