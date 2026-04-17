@@ -1,3 +1,5 @@
+#presenta cambios para poder enviar los mail a partir del archivo horarios.json
+#toca corregir porque no aparece la palabra errores desspues del numero de eerores encontrado
 import os
 import smtplib
 import ssl
