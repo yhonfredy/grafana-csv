@@ -1,0 +1,39 @@
+graph TD
+    subgraph Orquestacion_Linux["1. ORQUESTACIÓN (Bash)"]
+        Cron[Cron Job / Manual] --> Main[ejecutar_monitoreo.sh]
+        Main --> LogsLocal[(Logs Locales .log)]
+    end
+
+    subgraph Motores_Validacion["2. MOTORES DE VALIDACIÓN (Python)"]
+        Main --> P1[validarServicios.py]
+        Main --> P2[registroMonitoreo.py]
+        Main --> P3[status_check_oracleDataBase.py]
+        Main --> P4[estandar_ejecutar_coleccion_influx.py]
+        
+        P1 -- "Puertos TCP (L4)" --> Check1{¿Up/Down?}
+        P2 -- "URLs HTTP (L7)" --> Check2{Diagnóstico Curl}
+        P3 -- "SQL Oracle" --> Check3{Status DB}
+        P4 -- "SOAP XML" --> Check4{Business Logic}
+    end
+
+    subgraph Persistencia["3. ALMACENAMIENTO"]
+        Check1 & Check2 & Check3 & Check4 --> InfluxDB[(InfluxDB Bucket: status_services)]
+        Check4 --> XMLFiles[Archivos XML res/err]
+        Check2 --> CSVFiles[Reportes CSV/TXT]
+    end
+
+    subgraph Notificacion["4. ALERTAMIENTO Y CIERRE"]
+        Main --> Mailer[influxdb_alert_mailer.py]
+        InfluxDB -- "Query últimos 15 min" --> Mailer
+        Mailer -- "Coteja contra" --> Sch[horarios.json]
+        
+        Mailer --> Decision{¿Enviar Correo?}
+        Decision -- "Si es Hora Fija" --> Send[📧 Email Reporte General]
+        Decision -- "Si hay error fuera de hora" --> SendAlerta[📧 Email Alerta Crítica]
+        Decision -- "Todo OK / No es hora" --> Sleep[Fin de ejecución]
+    end
+
+    style Main fill:#f9f,stroke:#333,stroke-width:2px
+    style InfluxDB fill:#008bb1,color:#fff
+    style Send fill:#28a745,color:#fff
+    style SendAlerta fill:#dc3545,color:#fff
