@@ -18,6 +18,11 @@
 # sino que InfluxDB sigue un estándar mundial de bases de datos. siempre guarda la información en hora UTC (Tiempo Universal Coordinado) por diseño.
 # se comentarea recipients = [EMAIL_TO] para permitir enviar a varios correos separados por comas 
 # recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
+#⚠️  El script usa start_dt y stop_dt que vienen de la función get_window(), la cual está configurada en UTC (Londres). 
+# Debemos restarles las 5 horas también en el encabezado.
+# ANTES: ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
+# ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+
 
 import os
 import smtplib
@@ -155,7 +160,8 @@ def _rows_to_html(rows: list) -> str:
     return html + '</table>'
 
 def build_email_html(data, label, total_errors, start_dt, stop_dt):
-    ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
+    # ANTES: ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M UTC")
+    ahora_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     sum_color = "#DC3545" if total_errors > 0 else "#28A745"
     
     sections_html = ""
@@ -202,8 +208,9 @@ def build_email_html(data, label, total_errors, start_dt, stop_dt):
             <div style="padding:30px;">
                 <div style="margin-bottom:30px;">
                     <h3 style="color:{sum_color}; margin:0; font-size:18px;">⚠️ {total_errors} error(es) detectado(s)</h3>
+                    # restamos 5 horas a la visualización:
                     <p style="margin:5px 0; font-size:13px; color:#555;">
-                        Ventana analizada: <b>{start_dt.strftime('%Y-%m-%d %H:%M UTC')}</b> → <b>{stop_dt.strftime('%Y-%m-%d %H:%M UTC')}</b> | Bucket: <b>{INFLUX_BUCKET}</b>
+                        Ventana analizada: <b>{(start_dt - timedelta(hours=5)).strftime('%H:%M')}</b> → <b>{(stop_dt - timedelta(hours=5)).strftime('%H:%M')}</b>
                     </p>
                 </div>
                 {sections_html}
