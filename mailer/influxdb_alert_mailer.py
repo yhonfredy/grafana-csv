@@ -16,7 +16,8 @@
 #    row = {"time": hora_colombia.strftime("%Y-%m-%d %H:%M:%S")}
 # La hora +5 nop es error de imfluxDB. No es que InfluxDB tenga un "error"
 # sino que InfluxDB sigue un estándar mundial de bases de datos. siempre guarda la información en hora UTC (Tiempo Universal Coordinado) por diseño.
-# se comentarea recipients = [EMAIL_TO] para permitir enviar a varios correos separados por comas recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
+# se comentarea recipients = [EMAIL_TO] para permitir enviar a varios correos separados por comas 
+# recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
 
 import os
 import smtplib
