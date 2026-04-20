@@ -6,6 +6,17 @@
 #En el Asunto del correo (Subject): También aparecerá corregido:
 #⚠️ [06:03] Monitoreo Seguros Bolívar - 6 error(es)
 #⚠️ nueva lógica de destinatarios diferenciados (CC solo en reportes fijos, alertas directas solo al destinatario principal)
+#⚠️ BLOQUE ORIGINAL (Líneas 108 aprox)
+#for rec in t.records:
+#    row = {"time": rec.get_time().strftime("%Y-%m-%d %H:%M:%S UTC")}
+# BLOQUE CORREGIDO (Resta 5 horas para Colombia)
+#for rec in t.records:
+    # Restamos 5 horas al objeto datetime que viene de Influx
+#    hora_colombia = rec.get_time() - timedelta(hours=5)
+#    row = {"time": hora_colombia.strftime("%Y-%m-%d %H:%M:%S")}
+# La hora +5 nop es error de imfluxDB. No es que InfluxDB tenga un "error"
+# sino que InfluxDB sigue un estándar mundial de bases de datos.
+# siempre guarda la información en hora UTC (Tiempo Universal Coordinado) por diseño.
 
 import os
 import smtplib
@@ -94,8 +105,13 @@ def query_influx(start: datetime, stop: datetime) -> dict:
             tables = api.query(query)
             rows = []
             for t in tables:
+            # BLOQUE CORREGIDO (Resta 5 horas para Colombia)
                 for rec in t.records:
-                    row = {"time": rec.get_time().strftime("%Y-%m-%d %H:%M:%S UTC")}
+                    # Restamos 5 horas al objeto datetime que viene de Influx
+                    hora_colombia = rec.get_time() - timedelta(hours=5)
+                    row = {"time": hora_colombia.strftime("%Y-%m-%d %H:%M:%S")}
+                #for rec in t.records: estos traen los datos de influx
+                    #row = {"time": rec.get_time().strftime("%Y-%m-%d %H:%M:%S UTC")} 
                     for k, v in rec.values.items():
                         if k not in ["_start","_stop","_time","_field","_measurement","result","table"]:
                             row[k] = str(v)
