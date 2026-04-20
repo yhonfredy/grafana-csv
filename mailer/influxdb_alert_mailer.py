@@ -15,8 +15,8 @@
 #    hora_colombia = rec.get_time() - timedelta(hours=5)
 #    row = {"time": hora_colombia.strftime("%Y-%m-%d %H:%M:%S")}
 # La hora +5 nop es error de imfluxDB. No es que InfluxDB tenga un "error"
-# sino que InfluxDB sigue un estándar mundial de bases de datos.
-# siempre guarda la información en hora UTC (Tiempo Universal Coordinado) por diseño.
+# sino que InfluxDB sigue un estándar mundial de bases de datos. siempre guarda la información en hora UTC (Tiempo Universal Coordinado) por diseño.
+# se comentarea recipients = [EMAIL_TO] para permitir enviar a varios correos separados por comas recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
 
 import os
 import smtplib
@@ -217,7 +217,9 @@ def build_email_html(data, label, total_errors, start_dt, stop_dt):
 def send_email(html, total_errors, label, incluir_cc=True):
     subject = f"{'⚠️' if total_errors > 0 else '✅'} [{label}] Monitoreo Seguros Bolívar - {total_errors} error(es)"
     msg = MIMEMultipart("alternative"); msg["Subject"] = subject; msg["From"] = GMAIL_USER; msg["To"] = EMAIL_TO
-    recipients = [EMAIL_TO]
+    #recipients = [EMAIL_TO]
+    # permite enviar a varios correos separados por comas
+    recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
     if incluir_cc and EMAIL_CC:
         msg["Cc"] = EMAIL_CC
         recipients += [e.strip() for e in EMAIL_CC.split(",") if e.strip()]
