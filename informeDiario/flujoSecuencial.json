@@ -1,0 +1,26 @@
+📂 Secuencia Lógica del Proceso (Step-by-Step)
+Si prefieres pasarlo manualmente a otra herramienta, esta es la secuencia exacta:
+
+Inicio: El Cron dispara ejecutar_monitoreo.sh.
+
+Configuración: El script Bash setea la zona horaria y crea la carpeta de logs del día.
+
+Ejecución de Sondas:
+
+Sonda 1 (Red): Escanea puertos de WebLogic, SQL e IPM. Sube resultados a InfluxDB.
+
+Sonda 2 (Web): Ataca las URLs. Si fallan, analiza si es DNS, SSL o Connection Timeout. Sube resultados a InfluxDB.
+
+Sonda 3 (Datos): Entra a Oracle y consulta la vista de monitoreo. Sube el estado de todas las DBs a InfluxDB.
+
+Sonda 4 (Negocio): Envía XMLs reales a los servicios IPM. Si el XML falla, guarda el archivo de error. Sube el status a InfluxDB.
+
+Consolidación: El script Bash invoca al Mailer.
+
+Análisis de Datos: El Mailer le pide a InfluxDB todos los errores que hayan ocurrido en los últimos 15 minutos de todas las sondas anteriores.
+
+Filtrado: El Mailer revisa si estamos en horario de reporte (ej. 06:00 AM) o si es una emergencia (un servicio se cayó justo ahora).
+
+Notificación: Se construye el HTML con las tablas de errores y se envía por Gmail usando SSL.
+
+Fin: El log integral se cierra y queda guardado en el servidor.
