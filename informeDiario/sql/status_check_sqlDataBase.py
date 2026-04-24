@@ -85,7 +85,7 @@ def main():
             # Criticidad manual
             criticidad = "ALTA" if db_name in ['CF_Admin', 'CF_Auth', 'SunSystemsData'] else "MEDIA"
 
-            db_point = Point("status_check_sqlDataBase_individual") \
+            db_point = Point("status_check_sqlDataBase") \
                 .tag("instance_name", SQL_SERVER) \
                 .tag("database_name", db_name) \
                 .tag("ambiente", "PROD") \
