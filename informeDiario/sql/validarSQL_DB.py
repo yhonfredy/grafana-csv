@@ -25,7 +25,7 @@ INFLUX_ORG = _CONFIG["INFLUX_ORG"]
 INFLUX_BUCKET = _CONFIG["INFLUX_BUCKET"]
 
 # 2. Configuración de SQL Server
-SQL_SERVER = "10.1.5.6"  # IP según tu arquitectura SQL
+SQL_SERVER = "10.1.5.6"  # IP
 SQL_USER = "TU_USUARIO" 
 SQL_PASS = "TU_CONTRASEÑA"
 SQL_DATABASE = "master"
