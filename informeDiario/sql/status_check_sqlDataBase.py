@@ -30,7 +30,9 @@ SQL_IP = os.getenv("SQL_IP")     # ESTE ES EL CAMBIO
 SQL_DATABASE = "master"
 
 # Cadena de conexión usando las variables del .env
-conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SQL_IP};DATABASE={SQL_DATABASE};UID={SQL_USER};PWD={SQL_PASS}'
+# conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SQL_IP};DATABASE={SQL_DATABASE};UID={SQL_USER};PWD={SQL_PASS}'
+# Se Cambia el 17 por el 18 y se agrega TrustServerCertificate
+conn_str = f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={SQL_IP};DATABASE={SQL_DATABASE};UID={SQL_USER};PWD={SQL_PASS};TrustServerCertificate=yes'
 
 def obtener_creds_influx():
     """ Lee las credenciales de Influx desde variables.txt igual que en Oracle """
